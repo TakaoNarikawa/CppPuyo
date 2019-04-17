@@ -1,11 +1,97 @@
 #include <curses.h>
 #include <iostream>
 #include "p_system.hpp"
+
+void DrawPuyo(int y, int x, puyocolor c);
+void Display();
+void set_debug_field();
+
+int main(int argc, char **argv) {
+    //画面の初期化
+    initscr();
+    //カラー属性を扱うための初期化
+    start_color();
+    //キーを押しても画面に表示しない
+    noecho();
+    //キー入力を即座に受け付ける
+    cbreak();
+
+    curs_set(0);
+    //キー入力受付方法指定
+    keypad(stdscr, TRUE);
+    //キー入力非ブロッキングモード
+    timeout(0);
+
+    //初期化処理
+    int lines = 6;
+    int cols = 13;
+    //フィールドは画面サイズの縦横1/2にする
+    ChangeDataSize(13, 6);
+    //最初のぷよ生成
+    set_debug_field();
+    UpdateLinkedNum();
+    UpdateMoveableField();
+
+    GeneratePuyo();
+
+    int delay = 0;
+    int waitCount = 25000;
+
+    int puyostate = 0;
+
+    //メイン処理ループ
+    while (1) {
+        if (!isWaiting) {
+            //キー入力受付
+            int ch;
+            ch = getch();
+            // Qの入力で終了
+            if (ch == 'Q') {
+                break;
+            }
+            //入力キーごとの処理
+            switch (ch) {
+                case KEY_LEFT:
+                    MoveLeft();
+                    break;
+                case KEY_RIGHT:
+                    MoveRight();
+                    break;
+                case 'z':
+                    //ぷよ回転処理
+                    break;
+                default:
+                    break;
+            }
+
+            if (delay % waitCount == 0) {
+                MoveDown();
+                if (isPuyoLanding()) {
+                    PutPuyo();
+                    UpdateLinkedNum();
+                    UpdateMoveableField();
+                    if (Chains()) {
+                        ChainPuyo();
+                    }
+                    GeneratePuyo();
+                }
+            }
+        } else {
+        }
+        delay++;
+        Display();
+    }
+
+    //画面をリセット
+    endwin();
+    return 0;
+}
+
 void DrawPuyo(int y, int x, puyocolor c) {
     x *= 2;
     switch (c) {
         case NONE:
-            mvaddch(y, x, 'T');
+            mvaddch(y, x, ' ');
             break;
         case RED:
             mvaddch(y, x, 'R');
@@ -70,78 +156,4 @@ void set_debug_field() {
             SetFieldColor(y, x, c);
         }
     }
-}
-
-int main(int argc, char **argv) {
-    //画面の初期化
-    initscr();
-    //カラー属性を扱うための初期化
-    start_color();
-    //キーを押しても画面に表示しない
-    noecho();
-    //キー入力を即座に受け付ける
-    cbreak();
-
-    curs_set(0);
-    //キー入力受付方法指定
-    keypad(stdscr, TRUE);
-    //キー入力非ブロッキングモード
-    timeout(0);
-
-    //初期化処理
-    int lines = 6;
-    int cols = 13;
-    //フィールドは画面サイズの縦横1/2にする
-    ChangeDataSize(13, 6);
-    //最初のぷよ生成
-    set_debug_field();
-    GeneratePuyo();
-
-    int delay = 0;
-    int waitCount = 50000;
-
-    int puyostate = 0;
-
-    //メイン処理ループ
-    while (1) {
-        //キー入力受付
-        int ch;
-        ch = getch();
-        // Qの入力で終了
-        if (ch == 'Q') {
-            break;
-        }
-        //入力キーごとの処理
-        switch (ch) {
-            case KEY_LEFT:
-                MoveLeft();
-                break;
-            case KEY_RIGHT:
-                MoveRight();
-                break;
-            case 'z':
-                //ぷよ回転処理
-                break;
-            default:
-                break;
-        }
-
-        //処理速度調整のためのif文
-        if (delay % waitCount == 0) {
-            //ぷよ下に移動
-            MoveDown();
-            //ぷよ着地判定
-            if (isPuyoLanding()) {
-                //着地していたら新しいぷよ生成
-                GeneratePuyo();
-            }
-        }
-        delay++;
-        //表示
-        Display();
-    }
-
-    //画面をリセット
-    endwin();
-    return 0;
 }
