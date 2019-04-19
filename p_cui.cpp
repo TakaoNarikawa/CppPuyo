@@ -9,6 +9,7 @@ void Display();
 void set_debug_field();
 void InitColor();
 
+using namespace sys;
 int main(int argc, char **argv) {
     //画面の初期化
     initscr();
@@ -158,7 +159,7 @@ void Display() {
     }
     //落下中ぷよ表示
     if (!isChaining) {
-        int *s_puyo_axis = get_s_puyo_axis();
+        int *s_puyo_axis = GetSubPuyoAxis();
         DrawPuyo(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
         DrawPuyo(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
     }

@@ -3,9 +3,15 @@
 
 #include <iostream>
 #include <random>
+#include <vector>
 
 enum puyocolor { NONE, RED, BLUE, GREEN, YELLOW };
 enum direction { UP, LEFT, DOWN, RIGHT };
+
+typedef struct {
+    puyocolor main;
+    puyocolor sub;
+} nextpuyo;
 typedef struct {
     bool up;
     bool down;
@@ -22,31 +28,12 @@ bool *field_linked_num_scanned = NULL;
 bool *field_linked_num_applied = NULL;
 //操作ぷよ
 direction rotate_state = UP;
+bool isChaining = false;
 int default_axis[2] = {0, 3};
 int m_puyo_axis[2] = {0, 0};
 int s_puyo_axis[2] = {0, 0};
-bool isChaining = false;
-void update_s_puyo_axis() {
-    memcpy(s_puyo_axis, m_puyo_axis, sizeof(m_puyo_axis));
-    switch (rotate_state) {
-        case UP:
-            s_puyo_axis[0]--;
-            break;
-        case DOWN:
-            s_puyo_axis[0]++;
-            break;
-        case LEFT:
-            s_puyo_axis[1]--;
-            break;
-        case RIGHT:
-            s_puyo_axis[1]++;
-            break;
-    }
-}
-int *get_s_puyo_axis() {
-    update_s_puyo_axis();
-    return s_puyo_axis;
-}
+std::vector<nextpuyo> nextPuyoSet;
+int controlPuyoIndex = 0;
 puyocolor c_puyo_color[2] = {RED, BLUE};
 //盤面の行数，列数
 unsigned int data_line = 0;
@@ -116,15 +103,45 @@ void SetFieldBool(bool *data, unsigned int y, unsigned int x, bool value) {
     }
     data[y * GetColumn() + x] = value;
 }
+void UpdateSubPuyoAxis() {
+    memcpy(s_puyo_axis, m_puyo_axis, sizeof(m_puyo_axis));
+    switch (rotate_state) {
+        case UP:
+            s_puyo_axis[0]--;
+            break;
+        case DOWN:
+            s_puyo_axis[0]++;
+            break;
+        case LEFT:
+            s_puyo_axis[1]--;
+            break;
+        case RIGHT:
+            s_puyo_axis[1]++;
+            break;
+    }
+}
+int *GetSubPuyoAxis() {
+    UpdateSubPuyoAxis();
+    return s_puyo_axis;
+}
+nextpuyo GetNextPuyo(int i) {
+    while (nextPuyoSet.size() <= i) {
+    }
+    return nextPuyoSet[i];
+}
 
 void GeneratePuyo() {
     memcpy(m_puyo_axis, default_axis, sizeof(default_axis));
 
     std::random_device rnd;  // 非決定的な乱数生成器を生成
+    nextpuyo puyo;
     std::mt19937 mt(rnd());
-    std::uniform_int_distribution<> rand100(1, 4);  // [0, 99] 範囲の一様乱数
-    c_puyo_color[0] = (puyocolor)rand100(mt);
-    c_puyo_color[1] = (puyocolor)rand100(mt);
+    std::uniform_int_distribution<> rand100(1, 4);
+    puyo.main = (puyocolor)rand100(mt);
+    puyo.sub = (puyocolor)rand100(mt);
+
+    c_puyo_color[0] = puyo.main;
+    c_puyo_color[1] = puyo.sub;
 
     rotate_state = UP;
 }
@@ -265,7 +282,7 @@ void DropPuyo() {
 }
 
 void Move(direction dir) {
-    update_s_puyo_axis();
+    UpdateSubPuyoAxis();
     bool moveable;
 
     switch (dir) {
@@ -298,7 +315,7 @@ void MoveLeft() { Move(LEFT); }
 void MoveRight() { Move(RIGHT); }
 void MoveDown() { Move(DOWN); }
 void AfterRotate() {
-    update_s_puyo_axis();
+    UpdateSubPuyoAxis();
     //サブぷよの移動先がmoveableならなにもしない
     if (isMoveable(s_puyo_axis[0], s_puyo_axis[1])) {
         return;
@@ -326,7 +343,7 @@ void RotateLeft() {
     AfterRotate();
 }
 void PutPuyo() {
-    update_s_puyo_axis();
+    UpdateSubPuyoAxis();
     SetFieldColor(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
     SetFieldColor(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
     DropPuyo();
