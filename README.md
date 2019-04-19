@@ -17,7 +17,7 @@
 
 ## 表示内容
 
-![description](https://github.com/caprolactam2450/CppPuyo/blob/master/screenshots/chain.gif)
+![description](https://github.com/caprolactam2450/CppPuyo/blob/master/screenshots/chainimage.png)
 
 一番左に表示されているフィールドに対応して
 
