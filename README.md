@@ -13,4 +13,4 @@
 
 `$ ./a.out`
 
-![demo](https://raw.github.com/wiki/caprolactam2450/CppPuyo/screenshot/chain.gif)
+![demo](https://github.com/caprolactam2450/CppPuyo/blob/master/screenshots/chain.gif)
