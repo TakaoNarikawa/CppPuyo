@@ -12,3 +12,5 @@
 `$ g++ p_cui.cpp p_system.cpp -lncurses`
 
 `$ ./a.out`
+
+![demo](https://raw.github.com/wiki/caprolactam2450/CppPuyo/screenshot/chain.gif)
