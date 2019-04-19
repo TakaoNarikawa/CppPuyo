@@ -2,9 +2,10 @@
 #define _P_SYSTEM_H_
 
 #include <iostream>
+#include <random>
 
 enum puyocolor { NONE, RED, BLUE, GREEN, YELLOW };
-enum direction { UP, DOWN, LEFT, RIGHT };
+enum direction { UP, LEFT, DOWN, RIGHT };
 typedef struct {
     bool up;
     bool down;
@@ -21,10 +22,10 @@ bool *field_linked_num_scanned = NULL;
 bool *field_linked_num_applied = NULL;
 //操作ぷよ
 direction rotate_state = UP;
-int default_axis[2] = {1, 3};
+int default_axis[2] = {0, 3};
 int m_puyo_axis[2] = {0, 0};
 int s_puyo_axis[2] = {0, 0};
-bool isWaiting = false;
+bool isChaining = false;
 void update_s_puyo_axis() {
     memcpy(s_puyo_axis, m_puyo_axis, sizeof(m_puyo_axis));
     switch (rotate_state) {
@@ -116,7 +117,17 @@ void SetFieldBool(bool *data, unsigned int y, unsigned int x, bool value) {
     data[y * GetColumn() + x] = value;
 }
 
-void GeneratePuyo() { memcpy(m_puyo_axis, default_axis, sizeof(default_axis)); }
+void GeneratePuyo() {
+    memcpy(m_puyo_axis, default_axis, sizeof(default_axis));
+
+    std::random_device rnd;  // 非決定的な乱数生成器を生成
+    std::mt19937 mt(rnd());
+    std::uniform_int_distribution<> rand100(1, 4);  // [0, 99] 範囲の一様乱数
+    c_puyo_color[0] = (puyocolor)rand100(mt);
+    c_puyo_color[1] = (puyocolor)rand100(mt);
+
+    rotate_state = UP;
+}
 
 // -- 連結数 計算 start --
 directionBoolSet GetLinkedDir(unsigned int y, unsigned x) {
@@ -185,8 +196,8 @@ void UpdateLinkedNum() {
     field_linked_num_scanned = new bool[GetLine() * GetColumn()];
     field_linked_num_applied = new bool[GetLine() * GetColumn()];
 }
-
 // -- 連結数 計算 end --
+
 void UpdateMoveableField() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
@@ -205,6 +216,7 @@ bool isMoveable(int y, int x) {
     return GetFieldBool(field_moveable, y, x);
     // return true;
 }
+
 bool isPuyoLanding() {  //　　書き換えろ
     bool moveable = isMoveable(m_puyo_axis[0] + 1, m_puyo_axis[1]) &&
                     isMoveable(s_puyo_axis[0] + 1, s_puyo_axis[1]);
@@ -231,7 +243,7 @@ void ErasePuyo() {
     }
 }
 void DropPuyo() {
-    puyocolor *colCache = new puyocolor[GetColumn()];
+    puyocolor *colCache = new puyocolor[GetLine()];
     int targetIndex = 0;
     for (int x = 0; x < GetColumn(); x++) {
         // y = 0 のときは上にぷよないのでスルー
@@ -241,20 +253,15 @@ void DropPuyo() {
                 targetIndex++;
             }
         }
-        for (int y = GetLine() - 1; y > 0; y--) {
-            SetFieldColor(y, x, colCache[y]);
+        for (int y = 0; y < GetLine(); y++) {
+            SetFieldColor(GetLine() - y - 1, x, colCache[y]);
         }
-        puyocolor *colCache = new puyocolor[GetColumn()];
+        for (int i = 0; i < GetLine(); i++) {
+            colCache[i] = NONE;
+        }
         targetIndex = 0;
     }
-}
-void ChainPuyo() {
-    while (Chains()) {
-        ErasePuyo();
-        DropPuyo();
-        UpdateLinkedNum();
-    }
-    UpdateMoveableField();
+    delete[] colCache;
 }
 
 void Move(direction dir) {
@@ -287,17 +294,43 @@ void Move(direction dir) {
             return;
     }
 }
-void PutPuyo() {
-    update_s_puyo_axis();
-
-    SetFieldColor(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
-    SetFieldColor(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
-}
 void MoveLeft() { Move(LEFT); }
 void MoveRight() { Move(RIGHT); }
 void MoveDown() { Move(DOWN); }
+void AfterRotate() {
+    update_s_puyo_axis();
+    //サブぷよの移動先がmoveableならなにもしない
+    if (isMoveable(s_puyo_axis[0], s_puyo_axis[1])) {
+        return;
+    }
+    //右も左も!moveable
+    if (!isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1) &&
+        !isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1)) {
+        //はさまっちょむ
+    }
+    //壁蹴りで左移動
+    if (m_puyo_axis[1] < s_puyo_axis[1]) {
+        MoveLeft();
+    }
+    //壁蹴りで右移動
+    if (m_puyo_axis[1] > s_puyo_axis[1]) {
+        MoveRight();
+    }
+}
+void RotateRight() {
+    rotate_state = (direction)(((int)rotate_state + 3) % 4);
+    AfterRotate();
+}
+void RotateLeft() {
+    rotate_state = (direction)(((int)rotate_state + 1) % 4);
+    AfterRotate();
+}
+void PutPuyo() {
+    update_s_puyo_axis();
+    SetFieldColor(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
+    SetFieldColor(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
+    DropPuyo();
+}
 }  // namespace sys
-
-using namespace sys;
 
 #endif  //_P_SYSTEM_H_

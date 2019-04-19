@@ -2,15 +2,19 @@
 #include <iostream>
 #include "p_system.hpp"
 
-void DrawPuyo(int y, int x, puyocolor c);
+void DrawObject(int y, int x, char c, int colorID);
+void DrawPuyo(int y, int x, puyocolor p);
+void DrawMoveable();
 void Display();
 void set_debug_field();
+void InitColor();
 
 int main(int argc, char **argv) {
     //画面の初期化
     initscr();
     //カラー属性を扱うための初期化
     start_color();
+    InitColor();
     //キーを押しても画面に表示しない
     noecho();
     //キー入力を即座に受け付ける
@@ -28,20 +32,24 @@ int main(int argc, char **argv) {
     //フィールドは画面サイズの縦横1/2にする
     ChangeDataSize(13, 6);
     //最初のぷよ生成
-    set_debug_field();
+    // set_debug_field();
     UpdateLinkedNum();
     UpdateMoveableField();
 
     GeneratePuyo();
 
     int delay = 0;
+    int chainDelay = 0;
+    // true -> erase, false -> drop
+    bool whichEraseDrop = true;
     int waitCount = 25000;
+    int chainWaitCount = 10000;
 
     int puyostate = 0;
 
     //メイン処理ループ
     while (1) {
-        if (!isWaiting) {
+        if (!isChaining) {
             //キー入力受付
             int ch;
             ch = getch();
@@ -51,34 +59,57 @@ int main(int argc, char **argv) {
             }
             //入力キーごとの処理
             switch (ch) {
-                case KEY_LEFT:
+                case 'a':
                     MoveLeft();
                     break;
-                case KEY_RIGHT:
+                case 'd':
                     MoveRight();
                     break;
-                case 'z':
-                    //ぷよ回転処理
+                case 's':
+                    MoveDown();
+                    break;
+                case 'j':
+                    RotateLeft();
+                    break;
+                case 'k':
+                    RotateRight();
                     break;
                 default:
                     break;
             }
 
             if (delay % waitCount == 0) {
+                delay = 0;
                 MoveDown();
                 if (isPuyoLanding()) {
                     PutPuyo();
                     UpdateLinkedNum();
                     UpdateMoveableField();
                     if (Chains()) {
-                        ChainPuyo();
+                        isChaining = true;
                     }
                     GeneratePuyo();
                 }
             }
+            delay++;
         } else {
+            if (chainDelay % chainWaitCount == 0) {
+                chainDelay = 0;
+                if (whichEraseDrop) {
+                    ErasePuyo();
+                } else {
+                    DropPuyo();
+                    UpdateLinkedNum();
+                }
+                whichEraseDrop = !whichEraseDrop;
+                if (whichEraseDrop && !Chains()) {
+                    isChaining = false;
+                    UpdateMoveableField();
+                }
+            }
+            chainDelay++;
         }
-        delay++;
+
         Display();
     }
 
@@ -86,28 +117,33 @@ int main(int argc, char **argv) {
     endwin();
     return 0;
 }
-
-void DrawPuyo(int y, int x, puyocolor c) {
+void DrawObject(int y, int x, char c, int colorID) {
     x *= 2;
-    switch (c) {
-        case NONE:
-            mvaddch(y, x, ' ');
-            break;
-        case RED:
-            mvaddch(y, x, 'R');
-            break;
-        case BLUE:
-            mvaddch(y, x, 'B');
-            break;
-        case GREEN:
-            mvaddch(y, x, 'G');
-            break;
-        case YELLOW:
-            mvaddch(y, x, 'Y');
-            break;
-        default:
-            mvaddch(y, x, '?');
-            break;
+    attron(COLOR_PAIR(colorID));
+    mvaddch(y, x, c);
+    attroff(COLOR_PAIR((int)c));
+}
+void DrawPuyo(int y, int x, puyocolor p) {
+    if (p == NONE) {
+        DrawObject(y, x, ' ', 0);
+    } else {
+        DrawObject(y, x, '@', (int)p);
+    }
+}
+void DrawMoveable() {
+    for (int y = 0; y < GetLine(); y++) {
+        for (int x = 0; x < GetColumn(); x++) {
+            char c = isMoveable(y, x) ? 'T' : 'F';
+            DrawObject(y, x + GetColumn() * 1 + 2, c, 5);
+        }
+    }
+}
+void DrawLinkedNum() {
+    for (int y = 0; y < GetLine(); y++) {
+        for (int x = 0; x < GetColumn(); x++) {
+            char c = '0' + GetFieldInt(field_linked_num, y, x);
+            DrawObject(y, x + GetColumn() * 2 + 4, c, 5);
+        }
     }
 }
 
@@ -121,9 +157,13 @@ void Display() {
         }
     }
     //落下中ぷよ表示
-    int *s_puyo_axis = get_s_puyo_axis();
-    DrawPuyo(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
-    DrawPuyo(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
+    if (!isChaining) {
+        int *s_puyo_axis = get_s_puyo_axis();
+        DrawPuyo(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
+        DrawPuyo(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
+    }
+    DrawMoveable();
+    DrawLinkedNum();
 
     //情報表示
     int count = 0;
@@ -156,4 +196,13 @@ void set_debug_field() {
             SetFieldColor(y, x, c);
         }
     }
+}
+
+void InitColor() {
+    init_pair(NONE, COLOR_BLACK, COLOR_BLACK);
+    init_pair(RED, COLOR_RED, COLOR_BLACK);
+    init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
+    init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);
+    init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(5, COLOR_WHITE, COLOR_BLACK);
 }
