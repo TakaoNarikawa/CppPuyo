@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <random>
-#include <vector>
 
 enum puyocolor { NONE, RED, BLUE, GREEN, YELLOW };
 enum direction { UP, LEFT, DOWN, RIGHT };
@@ -32,8 +31,8 @@ bool isChaining = false;
 int default_axis[2] = {0, 3};
 int m_puyo_axis[2] = {0, 0};
 int s_puyo_axis[2] = {0, 0};
-std::vector<nextpuyo> nextPuyoSet;
-int controlPuyoIndex = 0;
+nextpuyo nextPuyoSet[1000];
+int cPuyoIndex = 0;
 puyocolor c_puyo_color[2] = {RED, BLUE};
 //盤面の行数，列数
 unsigned int data_line = 0;
@@ -41,6 +40,8 @@ unsigned int data_column = 0;
 
 unsigned int GetLine() { return data_line; }
 unsigned int GetColumn() { return data_column; }
+
+void Rotate(direction dir);
 
 //メモリ開放
 void ReleaseData() {
@@ -124,21 +125,27 @@ int *GetSubPuyoAxis() {
     UpdateSubPuyoAxis();
     return s_puyo_axis;
 }
-nextpuyo GetNextPuyo(int i) {
-    while (nextPuyoSet.size() <= i) {
+nextpuyo GetNextPuyo() {
+    std::random_device rnd;  // 非決定的な乱数生成器を生成
+    nextpuyo puyo;
+    std::mt19937 mt(rnd());
+    std::uniform_int_distribution<int> rand100(1, 4);
+    puyo.main = (puyocolor)rand100(mt);
+    puyo.sub = (puyocolor)rand100(mt);
+    return puyo;
+}
+
+void CreatePuyoSet() {
+    for (int i = 0; i < 1000; i++) {
+        nextPuyoSet[i] = GetNextPuyo();
     }
-    return nextPuyoSet[i];
 }
 
 void GeneratePuyo() {
     memcpy(m_puyo_axis, default_axis, sizeof(default_axis));
 
-    std::random_device rnd;  // 非決定的な乱数生成器を生成
-    nextpuyo puyo;
-    std::mt19937 mt(rnd());
-    std::uniform_int_distribution<> rand100(1, 4);
-    puyo.main = (puyocolor)rand100(mt);
-    puyo.sub = (puyocolor)rand100(mt);
+    nextpuyo puyo = nextPuyoSet[cPuyoIndex];
+    cPuyoIndex++;
 
     c_puyo_color[0] = puyo.main;
     c_puyo_color[1] = puyo.sub;
@@ -286,6 +293,13 @@ void Move(direction dir) {
     bool moveable;
 
     switch (dir) {
+        case UP:
+            moveable = isMoveable(m_puyo_axis[0] - 1, m_puyo_axis[1]) &&
+                       isMoveable(s_puyo_axis[0] - 1, s_puyo_axis[1]);
+            if (moveable) {
+                m_puyo_axis[0]--;
+            }
+            break;
         case DOWN:
             moveable = isMoveable(m_puyo_axis[0] + 1, m_puyo_axis[1]) &&
                        isMoveable(s_puyo_axis[0] + 1, s_puyo_axis[1]);
@@ -311,10 +325,11 @@ void Move(direction dir) {
             return;
     }
 }
+void MoveUp() { Move(UP); }
+void MoveDown() { Move(DOWN); }
 void MoveLeft() { Move(LEFT); }
 void MoveRight() { Move(RIGHT); }
-void MoveDown() { Move(DOWN); }
-void AfterRotate() {
+void CheckRotate(direction dir) {
     UpdateSubPuyoAxis();
     //サブぷよの移動先がmoveableならなにもしない
     if (isMoveable(s_puyo_axis[0], s_puyo_axis[1])) {
@@ -323,25 +338,40 @@ void AfterRotate() {
     //右も左も!moveable
     if (!isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1) &&
         !isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1)) {
-        //はさまっちょむ
+        Rotate(dir);
     }
     //壁蹴りで左移動
     if (m_puyo_axis[1] < s_puyo_axis[1]) {
         MoveLeft();
+        return;
     }
     //壁蹴りで右移動
     if (m_puyo_axis[1] > s_puyo_axis[1]) {
         MoveRight();
+        return;
+    }
+    // 床けりで上移動
+    if (m_puyo_axis[0] < s_puyo_axis[0]) {
+        MoveUp();
+        return;
     }
 }
-void RotateRight() {
-    rotate_state = (direction)(((int)rotate_state + 3) % 4);
-    AfterRotate();
+void Rotate(direction dir) {
+    switch (dir) {
+        case LEFT:
+            rotate_state = (direction)(((int)rotate_state + 1) % 4);
+            CheckRotate(dir);
+            break;
+        case RIGHT:
+            rotate_state = (direction)(((int)rotate_state + 3) % 4);
+            CheckRotate(dir);
+            break;
+        default:  // never happen
+            break;
+    }
 }
-void RotateLeft() {
-    rotate_state = (direction)(((int)rotate_state + 1) % 4);
-    AfterRotate();
-}
+void RotateLeft() { Rotate(LEFT); }
+void RotateRight() { Rotate(RIGHT); }
 void PutPuyo() {
     UpdateSubPuyoAxis();
     SetFieldColor(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);

@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     // set_debug_field();
     UpdateLinkedNum();
     UpdateMoveableField();
-
+    CreatePuyoSet();
     GeneratePuyo();
 
     int delay = 0;
@@ -48,7 +48,6 @@ int main(int argc, char **argv) {
 
     int puyostate = 0;
 
-    //メイン処理ループ
     while (1) {
         if (!isChaining) {
             //キー入力受付
@@ -122,7 +121,7 @@ void DrawObject(int y, int x, char c, int colorID) {
     x *= 2;
     attron(COLOR_PAIR(colorID));
     mvaddch(y, x, c);
-    attroff(COLOR_PAIR((int)c));
+    attroff(COLOR_PAIR(colorID));
 }
 void DrawPuyo(int y, int x, puyocolor p) {
     if (p == NONE) {
@@ -130,6 +129,14 @@ void DrawPuyo(int y, int x, puyocolor p) {
     } else {
         DrawObject(y, x, '@', (int)p);
     }
+}
+
+void DrawNextPuyo() {
+    DrawPuyo(3, GetColumn(), nextPuyoSet[cPuyoIndex].main);
+    DrawPuyo(2, GetColumn(), nextPuyoSet[cPuyoIndex].sub);
+
+    DrawPuyo(6, GetColumn(), nextPuyoSet[cPuyoIndex + 1].main);
+    DrawPuyo(5, GetColumn(), nextPuyoSet[cPuyoIndex + 1].sub);
 }
 void DrawMoveable() {
     for (int y = 0; y < GetLine(); y++) {
@@ -163,8 +170,10 @@ void Display() {
         DrawPuyo(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
         DrawPuyo(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
     }
-    DrawMoveable();
-    DrawLinkedNum();
+
+    DrawNextPuyo();
+    // DrawMoveable();
+    // DrawLinkedNum();
 
     //情報表示
     int count = 0;
