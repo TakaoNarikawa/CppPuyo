@@ -5,6 +5,7 @@
 void DrawObject(int y, int x, char c, int colorID);
 void DrawPuyo(int y, int x, puyocolor p);
 void DrawMoveable();
+void DrawFrame();
 void Display();
 void set_debug_field();
 void InitColor();
@@ -36,6 +37,7 @@ int main(int argc, char **argv) {
     // set_debug_field();
     UpdateLinkedNum();
     UpdateMoveableField();
+
     CreatePuyoSet();
     GeneratePuyo();
 
@@ -117,10 +119,11 @@ int main(int argc, char **argv) {
     endwin();
     return 0;
 }
+int FieldAdjustX(int x) { return x * 2 + 1; }
+int FieldAdjustY(int y) { return y + 1; }
 void DrawObject(int y, int x, char c, int colorID) {
-    x *= 2;
     attron(COLOR_PAIR(colorID));
-    mvaddch(y, x, c);
+    mvaddch(FieldAdjustY(y), FieldAdjustX(x), c);
     attroff(COLOR_PAIR(colorID));
 }
 void DrawPuyo(int y, int x, puyocolor p) {
@@ -132,11 +135,11 @@ void DrawPuyo(int y, int x, puyocolor p) {
 }
 
 void DrawNextPuyo() {
-    DrawPuyo(3, GetColumn(), nextPuyoSet[cPuyoIndex].main);
-    DrawPuyo(2, GetColumn(), nextPuyoSet[cPuyoIndex].sub);
+    DrawPuyo(2, GetColumn() + 1, nextPuyoSet[cPuyoIndex].main);
+    DrawPuyo(1, GetColumn() + 1, nextPuyoSet[cPuyoIndex].sub);
 
-    DrawPuyo(6, GetColumn(), nextPuyoSet[cPuyoIndex + 1].main);
-    DrawPuyo(5, GetColumn(), nextPuyoSet[cPuyoIndex + 1].sub);
+    DrawPuyo(5, GetColumn() + 1, nextPuyoSet[cPuyoIndex + 1].main);
+    DrawPuyo(4, GetColumn() + 1, nextPuyoSet[cPuyoIndex + 1].sub);
 }
 void DrawMoveable() {
     for (int y = 0; y < GetLine(); y++) {
@@ -152,6 +155,18 @@ void DrawLinkedNum() {
             char c = '0' + GetFieldInt(field_linked_num, y, x);
             DrawObject(y, x + GetColumn() * 2 + 4, c, 5);
         }
+    }
+}
+void DrawFrame() {
+    for (int y = 0; y < GetLine() + 2; y++) {
+        mvaddch(y, 0, '#');
+        int x = FieldAdjustX(GetColumn() - 1) + 1;
+        mvaddch(y, x, '#');
+    }
+    for (int x = 1; x < GetColumn() * 2 + 1; x++) {
+        mvaddch(0, x, '#');
+        int y = FieldAdjustY(GetLine());
+        mvaddch(y, x, '#');
     }
 }
 
@@ -172,6 +187,7 @@ void Display() {
     }
 
     DrawNextPuyo();
+    DrawFrame();
     // DrawMoveable();
     // DrawLinkedNum();
 
@@ -188,7 +204,9 @@ void Display() {
     char msg[256];
     sprintf(msg, "Field: %d x %d, Pnum: %03d, r %d", GetLine(), GetColumn(),
             count, (int)rotate_state);
+
     mvaddstr(2, COLS - 35, msg);
+    mvaddstr(0, GetColumn() * 2 + 1, "next");
     refresh();
 }
 

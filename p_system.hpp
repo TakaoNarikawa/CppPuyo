@@ -28,7 +28,7 @@ bool *field_linked_num_applied = NULL;
 //操作ぷよ
 direction rotate_state = UP;
 bool isChaining = false;
-int default_axis[2] = {0, 3};
+int default_axis[2] = {0, 2};
 int m_puyo_axis[2] = {0, 0};
 int s_puyo_axis[2] = {0, 0};
 nextpuyo nextPuyoSet[1000];
