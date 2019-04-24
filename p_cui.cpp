@@ -145,7 +145,7 @@ void DrawMoveable() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
             char c = isMoveable(y, x) ? 'T' : 'F';
-            DrawObject(y, x + GetColumn() * 1 + 2, c, 5);
+            DrawObject(y, x + GetColumn() * 1 + 4, c, 5);
         }
     }
 }
@@ -153,7 +153,7 @@ void DrawLinkedNum() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
             char c = '0' + GetFieldInt(field_linked_num, y, x);
-            DrawObject(y, x + GetColumn() * 2 + 4, c, 5);
+            DrawObject(y, x + GetColumn() * 2 + 6, c, 5);
         }
     }
 }
@@ -188,8 +188,8 @@ void Display() {
 
     DrawNextPuyo();
     DrawFrame();
-    // DrawMoveable();
-    // DrawLinkedNum();
+    DrawMoveable();
+    DrawLinkedNum();
 
     //情報表示
     int count = 0;
