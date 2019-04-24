@@ -1,6 +1,7 @@
 #include "p_system.hpp"
 #include <curses.h>
 #include <iostream>
+#include "fielddata.hpp"
 #include "p_cui.hpp"
 
 int main(int argc, char **argv) {
@@ -36,23 +37,23 @@ int main(int argc, char **argv) {
                 break;
             }
             switch (ch) {
-            case 'a':
-                MoveLeft();
-                break;
-            case 'd':
-                MoveRight();
-                break;
-            case 's':
-                MoveDown();
-                break;
-            case 'j':
-                RotateLeft();
-                break;
-            case 'k':
-                RotateRight();
-                break;
-            default:
-                break;
+                case 'a':
+                    MoveLeft();
+                    break;
+                case 'd':
+                    MoveRight();
+                    break;
+                case 's':
+                    MoveDown();
+                    break;
+                case 'j':
+                    RotateLeft();
+                    break;
+                case 'k':
+                    RotateRight();
+                    break;
+                default:
+                    break;
             }
 
             if (delay % waitCount == 0) {
@@ -104,55 +105,29 @@ void ReleaseData() {
 }
 //盤面サイズ変更
 void ChangeDataSize(unsigned int line, unsigned int column) {
-    field_color = new puyocolor[line * column];
-    field_moveable = new bool[line * column];
-    field_linked_num = new int[line * column];
-    field_linked_num_scanned = new bool[line * column];
-    field_linked_num_applied = new bool[line * column];
+    field_color.ChangeDataSize(line, column);
+    field_moveable.ChangeDataSize(line, column);
+    field_linked_num.ChangeDataSize(line, column);
+    field_linked_num_scanned.ChangeDataSize(line, column);
+    field_linked_num_applied.ChangeDataSize(line, column);
     data_line = line;
     data_column = column;
-}
-
-bool ValueCheck(unsigned int y, unsigned int x) {
-    return y < GetLine() && x < GetColumn();
-}
-puyocolor GetFieldColor(unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? field_color[y * GetColumn() + x] : NONE;
-}
-void SetFieldColor(unsigned int y, unsigned int x, puyocolor value) {
-    if (!ValueCheck(y, x)) return;
-    field_color[y * GetColumn() + x] = value;
-}
-int GetFieldInt(int *data, unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? data[y * GetColumn() + x] : 0;
-}
-void SetFieldInt(int *data, unsigned int y, unsigned int x, int value) {
-    if (!ValueCheck(y, x)) return;
-    data[y * GetColumn() + x] = value;
-}
-bool GetFieldBool(bool *data, unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? data[y * GetColumn() + x] : false;
-}
-
-void SetFieldBool(bool *data, unsigned int y, unsigned int x, bool value) {
-    if (!ValueCheck(y, x)) return;
-    data[y * GetColumn() + x] = value;
 }
 void UpdateSubPuyoAxis() {
     memcpy(s_puyo_axis, m_puyo_axis, sizeof(m_puyo_axis));
     switch (rotate_state) {
-    case UP:
-        s_puyo_axis[0]--;
-        break;
-    case DOWN:
-        s_puyo_axis[0]++;
-        break;
-    case LEFT:
-        s_puyo_axis[1]--;
-        break;
-    case RIGHT:
-        s_puyo_axis[1]++;
-        break;
+        case UP:
+            s_puyo_axis[0]--;
+            break;
+        case DOWN:
+            s_puyo_axis[0]++;
+            break;
+        case LEFT:
+            s_puyo_axis[1]--;
+            break;
+        case RIGHT:
+            s_puyo_axis[1]++;
+            break;
     }
 }
 int *GetSubPuyoAxis() {
@@ -259,8 +234,8 @@ void UpdateLinkedNum() {
 void UpdateMoveableField() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
-            puyocolor c = GetFieldColor(y, x);
-            SetFieldBool(field_moveable, y, x, c == NONE);
+            puyocolor c = field_color.GetValue(y, x);
+            field_moveable.SetValue(y, x, c == NONE);
         }
     }
 }
@@ -271,8 +246,7 @@ bool isMoveable(int y, int x) {
     if (y < 0) {
         return true;
     }
-    return GetFieldBool(field_moveable, y, x);
-    // return true;
+    return field_moveable.GetValue(y, x);
 }
 
 bool isPuyoLanding() {  //　　書き換えろ
@@ -284,7 +258,7 @@ bool isPuyoLanding() {  //　　書き換えろ
 bool Chains() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
-            if (GetFieldInt(field_linked_num, y, x) >= 4) {
+            if (field_linked_num.GetValue(y, x) >= 4) {
                 return true;
             }
         }
@@ -295,7 +269,7 @@ void ErasePuyo() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
             if (GetFieldInt(field_linked_num, y, x) >= 4) {
-                SetFieldColor(y, x, NONE);
+                field_color.SetValue(y, x, NONE);
             }
         }
     }
@@ -327,36 +301,36 @@ void Move(direction dir) {
     bool moveable;
 
     switch (dir) {
-    case UP:
-        moveable = isMoveable(m_puyo_axis[0] - 1, m_puyo_axis[1]) &&
-                   isMoveable(s_puyo_axis[0] - 1, s_puyo_axis[1]);
-        if (moveable) {
-            m_puyo_axis[0]--;
-        }
-        break;
-    case DOWN:
-        moveable = isMoveable(m_puyo_axis[0] + 1, m_puyo_axis[1]) &&
-                   isMoveable(s_puyo_axis[0] + 1, s_puyo_axis[1]);
-        if (moveable) {
-            m_puyo_axis[0]++;
-        }
-        break;
-    case LEFT:
-        moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] - 1) &&
-                   isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1);
-        if (moveable) {
-            m_puyo_axis[1]--;
-        }
-        break;
-    case RIGHT:
-        moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] + 1) &&
-                   isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1);
-        if (moveable) {
-            m_puyo_axis[1]++;
-        }
-        break;
-    default:
-        return;
+        case UP:
+            moveable = isMoveable(m_puyo_axis[0] - 1, m_puyo_axis[1]) &&
+                       isMoveable(s_puyo_axis[0] - 1, s_puyo_axis[1]);
+            if (moveable) {
+                m_puyo_axis[0]--;
+            }
+            break;
+        case DOWN:
+            moveable = isMoveable(m_puyo_axis[0] + 1, m_puyo_axis[1]) &&
+                       isMoveable(s_puyo_axis[0] + 1, s_puyo_axis[1]);
+            if (moveable) {
+                m_puyo_axis[0]++;
+            }
+            break;
+        case LEFT:
+            moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] - 1) &&
+                       isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1);
+            if (moveable) {
+                m_puyo_axis[1]--;
+            }
+            break;
+        case RIGHT:
+            moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] + 1) &&
+                       isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1);
+            if (moveable) {
+                m_puyo_axis[1]++;
+            }
+            break;
+        default:
+            return;
     }
 }
 void CheckRotate(direction dir) {
@@ -367,7 +341,7 @@ void CheckRotate(direction dir) {
     }
     //右も左も!moveable
     if (!isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1) &&
-            !isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1)) {
+        !isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1)) {
         Rotate(dir);
     }
     //壁蹴りで左移動
@@ -388,16 +362,16 @@ void CheckRotate(direction dir) {
 }
 void Rotate(direction dir) {
     switch (dir) {
-    case LEFT:
-        rotate_state = (direction)(((int)rotate_state + 1) % 4);
-        CheckRotate(dir);
-        break;
-    case RIGHT:
-        rotate_state = (direction)(((int)rotate_state + 3) % 4);
-        CheckRotate(dir);
-        break;
-    default:  // never happen
-        break;
+        case LEFT:
+            rotate_state = (direction)(((int)rotate_state + 1) % 4);
+            CheckRotate(dir);
+            break;
+        case RIGHT:
+            rotate_state = (direction)(((int)rotate_state + 3) % 4);
+            CheckRotate(dir);
+            break;
+        default:  // never happen
+            break;
     }
 }
 void PutPuyo() {

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <random>
+#include "fielddata.hpp"
 
 enum puyocolor { NONE, RED, BLUE, GREEN, YELLOW };
 enum direction { UP, LEFT, DOWN, RIGHT };
@@ -20,11 +21,11 @@ typedef struct {
 
 namespace sys {
 //盤面状態
-puyocolor *field_color = NULL;
-bool *field_moveable = NULL;
-int *field_linked_num = NULL;
-bool *field_linked_num_scanned = NULL;
-bool *field_linked_num_applied = NULL;
+fielddata<puyocolor> field_color(NONE);
+fielddata<bool> field_moveable(false);
+fielddata<int> field_linked_num(0);
+fielddata<bool> field_linked_num_scanned(false);
+fielddata<bool> field_linked_num_applied(false);
 //操作ぷよ
 direction rotate_state = UP;
 bool isChaining = false;
@@ -43,13 +44,6 @@ unsigned int GetColumn() { return data_column; }
 
 void ReleaseData();
 void ChangeDataSize(unsigned int line, unsigned int column);
-bool ValueCheck(unsigned int y, unsigned int x);
-puyocolor GetFieldColor(unsigned int y, unsigned int x);
-void SetFieldColor(unsigned int y, unsigned int x, puyocolor value);
-int GetFieldInt(int *data, unsigned int y, unsigned int x);
-void SetFieldInt(int *data, unsigned int y, unsigned int x, int value);
-bool GetFieldBool(bool *data, unsigned int y, unsigned int x);
-void SetFieldBool(bool *data, unsigned int y, unsigned int x, bool value);
 void UpdateSubPuyoAxis();
 int *GetSubPuyoAxis();
 puyopair GetRandPuyoPair();
