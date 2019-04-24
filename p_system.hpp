@@ -42,7 +42,6 @@ unsigned int data_column = 0;
 unsigned int GetLine() { return data_line; }
 unsigned int GetColumn() { return data_column; }
 
-void ReleaseData();
 void ChangeDataSize(unsigned int line, unsigned int column);
 void UpdateSubPuyoAxis();
 int *GetSubPuyoAxis();

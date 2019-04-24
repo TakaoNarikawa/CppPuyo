@@ -62,7 +62,7 @@ void DrawMoveable() {
 void DrawLinkedNum() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
-            char c = '0' + GetFieldInt(field_linked_num, y, x);
+            char c = '0' + field_linked_num.GetValue(y, x);
             DrawObject(y, x + GetColumn() * 2 + 6, c, 5);
         }
     }
@@ -70,7 +70,7 @@ void DrawLinkedNum() {
 void DrawRawField() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
-            char c = '0' + (int)GetFieldInt(field_linked_num, y, x);
+            char c = '0' + field_linked_num.GetValue(y, x);
             DrawObject(y, x + GetColumn() * 3 + 8, c, 5);
         }
     }
@@ -91,7 +91,7 @@ void DrawFrame() {
 void Display() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
-            puyocolor c = GetFieldColor(y, x);
+            puyocolor c = field_color.GetValue(y, x);
             DrawPuyo(y, x, c);
         }
     }
@@ -111,7 +111,7 @@ void Display() {
     int count = 0;
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
-            if (GetFieldColor(y, x) != NONE) {
+            if (field_color.GetValue(y, x) != NONE) {
                 count++;
             }
         }
