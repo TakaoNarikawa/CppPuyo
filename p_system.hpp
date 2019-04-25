@@ -21,11 +21,11 @@ typedef struct {
 
 namespace sys {
 //盤面状態
-fielddata<puyocolor> field_color;
-fielddata<bool> field_moveable;
-fielddata<int> field_linked_num;
-fielddata<bool> field_linked_num_scanned;
-fielddata<bool> field_linked_num_applied;
+FieldData<puyocolor> field_color;
+FieldData<bool> field_moveable;
+FieldData<int> field_linked_num;
+FieldData<bool> field_linked_num_scanned;
+FieldData<bool> field_linked_num_applied;
 //操作ぷよ
 direction rotate_state = UP;
 bool isChaining = false;
@@ -36,13 +36,13 @@ puyopair puyoNext[1000];
 int cPuyoIndex = 0;
 puyocolor c_puyo_color[2] = {RED, BLUE};
 
-unsigned int data_line = 0;
-unsigned int data_column = 0;
+unsigned int data_rows = 0;
+unsigned int data_cols = 0;
 
-unsigned int GetLine() { return data_line; }
-unsigned int GetColumn() { return data_column; }
+unsigned int GetRow() { return data_rows; }
+unsigned int GetCol() { return data_cols; }
 
-void ChangeDataSize(unsigned int line, unsigned int column);
+void ChangeDataSize(unsigned int rows, unsigned int cols);
 void UpdateSubPuyoAxis();
 int *GetSubPuyoAxis();
 puyopair GetRandPuyoPair();

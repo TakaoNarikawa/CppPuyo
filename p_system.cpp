@@ -7,7 +7,7 @@
 int main(int argc, char **argv) {
     // 初期化
     // cui::InitCurses();
-    int lines = 6;
+    int rows = 6;
     int cols = 13;
 
     ChangeDataSize(13, 6);
@@ -95,14 +95,14 @@ int main(int argc, char **argv) {
 
 namespace sys {
 //盤面サイズ変更
-void ChangeDataSize(unsigned int line, unsigned int column) {
-    field_color.ChangeDataSize(line, column);
-    field_moveable.ChangeDataSize(line, column);
-    field_linked_num.ChangeDataSize(line, column);
-    field_linked_num_scanned.ChangeDataSize(line, column);
-    field_linked_num_applied.ChangeDataSize(line, column);
-    data_line = line;
-    data_column = column;
+void ChangeDataSize(unsigned int rows, unsigned int cols) {
+    field_color.ChangeDataSize(rows, cols);
+    field_moveable.ChangeDataSize(rows, cols);
+    field_linked_num.ChangeDataSize(rows, cols);
+    field_linked_num_scanned.ChangeDataSize(rows, cols);
+    field_linked_num_applied.ChangeDataSize(rows, cols);
+    data_rows = rows;
+    data_cols = cols;
 }
 void UpdateSubPuyoAxis() {
     memcpy(s_puyo_axis, m_puyo_axis, sizeof(m_puyo_axis));
@@ -160,10 +160,10 @@ directionBoolSet GetLinkedDir(unsigned int y, unsigned x) {
 
     dirs.up = y != 0 && field_color.GetValue(y - 1, x) == currentColor;
     dirs.down =
-        y < GetLine() - 1 && field_color.GetValue(y + 1, x) == currentColor;
+        y < GetCol() - 1 && field_color.GetValue(y + 1, x) == currentColor;
     dirs.left = x != 0 && field_color.GetValue(y, x - 1) == currentColor;
     dirs.right =
-        x < GetColumn() - 1 && field_color.GetValue(y, x + 1) == currentColor;
+        x < GetRow() - 1 && field_color.GetValue(y, x + 1) == currentColor;
 
     return dirs;
 }
@@ -205,8 +205,8 @@ void ApplyLinkedNum(unsigned int y, unsigned int x, int num) {
     }
 }
 void UpdateLinkedNum() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetCol(); y++) {
+        for (int x = 0; x < GetRow(); x++) {
             if (field_color.GetValue(y, x) != NONE) {
                 if (!field_linked_num_applied.GetValue(y, x)) {
                     int num = GetLinkedNum(y, x);
@@ -225,15 +225,15 @@ void UpdateLinkedNum() {
 // -- 連結数 計算 end --
 
 void UpdateMoveableField() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetCol(); y++) {
+        for (int x = 0; x < GetRow(); x++) {
             puyocolor c = field_color.GetValue(y, x);
             field_moveable.SetValue(y, x, (c == NONE));
         }
     }
 }
 bool isMoveable(int y, int x) {
-    if (x < 0 || x >= GetColumn() || y >= GetLine()) {
+    if (x < 0 || x >= GetRow() || y >= GetCol()) {
         return false;
     }
     if (y < 0) {
@@ -249,8 +249,8 @@ bool isPuyoLanding() {  //　　書き換えろ
 }
 
 bool Chains() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetCol(); y++) {
+        for (int x = 0; x < GetRow(); x++) {
             if (field_linked_num.GetValue(y, x) >= 4) {
                 return true;
             }
@@ -259,8 +259,8 @@ bool Chains() {
     return false;
 }
 void ErasePuyo() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetCol(); y++) {
+        for (int x = 0; x < GetRow(); x++) {
             if (field_linked_num.GetValue(y, x) >= 4) {
                 field_color.SetValue(y, x, NONE);
             }
@@ -268,20 +268,20 @@ void ErasePuyo() {
     }
 }
 void DropPuyo() {
-    fielddata<puyocolor> colCache(NONE, GetLine(), 1);
+    FieldData<puyocolor> colCache(NONE, GetCol(), 1);
     int targetIndex = 0;
-    for (int x = 0; x < GetColumn(); x++) {
+    for (int x = 0; x < GetRow(); x++) {
         // y = 0 のときは上にぷよないのでスルー
         colCache.ResetData();
 
-        for (int y = GetLine() - 1; y > 0; y--) {
+        for (int y = GetCol() - 1; y > 0; y--) {
             if (field_color.GetValue(y, x) != NONE) {
                 colCache.SetValue(targetIndex, 1, field_color.GetValue(y, x));
                 targetIndex++;
             }
         }
-        for (int y = 0; y < GetLine(); y++) {
-            field_color.SetValue(GetLine() - y - 1, x, colCache.GetValue(y, 1));
+        for (int y = 0; y < GetCol(); y++) {
+            field_color.SetValue(GetCol() - y - 1, x, colCache.GetValue(y, 1));
         }
         targetIndex = 0;
     }
