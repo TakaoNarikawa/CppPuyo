@@ -6,14 +6,21 @@
 
 int main(int argc, char **argv) {
     // 初期化
-    cui::InitCurses();
+    // cui::InitCurses();
     int lines = 6;
     int cols = 13;
+
     ChangeDataSize(13, 6);
 
-    UpdateLinkedNum();
+    for (int y = 0; y < 13; y++) {
+        for (int x = 0; x < 6; x++) {
+            std::cout << field_linked_num.GetValue(y, x);
+        }
+        std::cout << std::endl;
+    }
+    exit(0);
+    UpdateLinkedNum();  // pointer being freed was not allocated
     UpdateMoveableField();
-
     CreatePuyoNext();
     GeneratePuyo();
 
@@ -27,69 +34,69 @@ int main(int argc, char **argv) {
 
     int puyostate = 0;
 
-    while (1) {
-        if (!isChaining) {
-            //キー入力受付
-            int ch;
-            ch = getch();
-            // Qの入力で終了
-            if (ch == 'Q') {
-                break;
-            }
-            switch (ch) {
-                case 'a':
-                    MoveLeft();
-                    break;
-                case 'd':
-                    MoveRight();
-                    break;
-                case 's':
-                    MoveDown();
-                    break;
-                case 'j':
-                    RotateLeft();
-                    break;
-                case 'k':
-                    RotateRight();
-                    break;
-                default:
-                    break;
-            }
+    // while (1) {
+    //     if (!isChaining) {
+    //         //キー入力受付
+    //         int ch;
+    //         ch = getch();
+    //         // Qの入力で終了
+    //         if (ch == 'Q') {
+    //             break;
+    //         }
+    //         switch (ch) {
+    //             case 'a':
+    //                 MoveLeft();
+    //                 break;
+    //             case 'd':
+    //                 MoveRight();
+    //                 break;
+    //             case 's':
+    //                 MoveDown();
+    //                 break;
+    //             case 'j':
+    //                 RotateLeft();
+    //                 break;
+    //             case 'k':
+    //                 RotateRight();
+    //                 break;
+    //             default:
+    //                 break;
+    //         }
 
-            if (delay % waitCount == 0) {
-                delay = 0;
-                MoveDown();
-                if (isPuyoLanding()) {
-                    PutPuyo();
-                    UpdateLinkedNum();
-                    UpdateMoveableField();
-                    if (Chains()) {
-                        isChaining = true;
-                    }
-                    GeneratePuyo();
-                }
-            }
-            delay++;
-        } else {
-            if (chainDelay % chainWaitCount == 0) {
-                chainDelay = 0;
-                if (whichEraseDrop) {
-                    ErasePuyo();
-                } else {
-                    DropPuyo();
-                    UpdateLinkedNum();
-                }
-                whichEraseDrop = !whichEraseDrop;
-                if (whichEraseDrop && !Chains()) {
-                    isChaining = false;
-                    UpdateMoveableField();
-                }
-            }
-            chainDelay++;
-        }
+    //         if (delay % waitCount == 0) {
+    //             delay = 0;
+    //             MoveDown();
+    //             if (isPuyoLanding()) {
+    //                 PutPuyo();
+    //                 UpdateLinkedNum();
+    //                 UpdateMoveableField();
+    //                 if (Chains()) {
+    //                     isChaining = true;
+    //                 }
+    //                 GeneratePuyo();
+    //             }
+    //         }
+    //         delay++;
+    //     } else {
+    //         if (chainDelay % chainWaitCount == 0) {
+    //             chainDelay = 0;
+    //             if (whichEraseDrop) {
+    //                 ErasePuyo();
+    //             } else {
+    //                 DropPuyo();
+    //                 UpdateLinkedNum();
+    //             }
+    //             whichEraseDrop = !whichEraseDrop;
+    //             if (whichEraseDrop && !Chains()) {
+    //                 isChaining = false;
+    //                 UpdateMoveableField();
+    //             }
+    //         }
+    //         chainDelay++;
+    //     }
 
-        cui::Display();
-    }
+    //     cui::Display();
+    // }
 
     cui::EndFrame();
     return 0;
@@ -221,8 +228,8 @@ void UpdateLinkedNum() {
             }
         }
     }
-    field_linked_num_scanned = new bool[GetLine() * GetColumn()];
-    field_linked_num_applied = new bool[GetLine() * GetColumn()];
+    field_linked_num_scanned.ResetData();
+    field_linked_num_applied.ResetData();
 }
 // -- 連結数 計算 end --
 
