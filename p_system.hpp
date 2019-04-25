@@ -21,11 +21,11 @@ typedef struct {
 
 namespace sys {
 //盤面状態
-fielddata<puyocolor> field_color(NONE);
-fielddata<bool> field_moveable(false);
-fielddata<int> field_linked_num(0);
-fielddata<bool> field_linked_num_scanned(false);
-fielddata<bool> field_linked_num_applied(false);
+fielddata<puyocolor> field_color;
+fielddata<bool> field_moveable;
+fielddata<int> field_linked_num;
+fielddata<bool> field_linked_num_scanned;
+fielddata<bool> field_linked_num_applied;
 //操作ぷよ
 direction rotate_state = UP;
 bool isChaining = false;

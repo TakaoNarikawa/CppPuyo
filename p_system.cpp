@@ -11,15 +11,7 @@ int main(int argc, char **argv) {
     int cols = 13;
 
     ChangeDataSize(13, 6);
-
-    for (int y = 0; y < 13; y++) {
-        for (int x = 0; x < 6; x++) {
-            std::cout << field_linked_num.GetValue(y, x);
-        }
-        std::cout << std::endl;
-    }
-    exit(0);
-    UpdateLinkedNum();  // pointer being freed was not allocated
+    UpdateLinkedNum();
     UpdateMoveableField();
     CreatePuyoNext();
     GeneratePuyo();
@@ -34,69 +26,68 @@ int main(int argc, char **argv) {
 
     int puyostate = 0;
 
-    // while (1) {
-    //     if (!isChaining) {
-    //         //キー入力受付
-    //         int ch;
-    //         ch = getch();
-    //         // Qの入力で終了
-    //         if (ch == 'Q') {
-    //             break;
-    //         }
-    //         switch (ch) {
-    //             case 'a':
-    //                 MoveLeft();
-    //                 break;
-    //             case 'd':
-    //                 MoveRight();
-    //                 break;
-    //             case 's':
-    //                 MoveDown();
-    //                 break;
-    //             case 'j':
-    //                 RotateLeft();
-    //                 break;
-    //             case 'k':
-    //                 RotateRight();
-    //                 break;
-    //             default:
-    //                 break;
-    //         }
+    while (1) {
+        if (!isChaining) {
+            //キー入力受付
+            int ch;
+            ch = getch();
+            // Qの入力で終了
+            if (ch == 'Q') {
+                break;
+            }
+            switch (ch) {
+                case 'a':
+                    MoveLeft();
+                    break;
+                case 'd':
+                    MoveRight();
+                    break;
+                case 's':
+                    MoveDown();
+                    break;
+                case 'j':
+                    RotateLeft();
+                    break;
+                case 'k':
+                    RotateRight();
+                    break;
+                default:
+                    break;
+            }
+            if (delay % waitCount == 0) {
+                delay = 0;
+                MoveDown();
+                if (isPuyoLanding()) {
+                    PutPuyo();
+                    UpdateLinkedNum();
+                    UpdateMoveableField();
+                    if (Chains()) {
+                        isChaining = true;
+                    }
+                    GeneratePuyo();
+                }
+            }
+            delay++;
+        } else {
+            if (chainDelay % chainWaitCount == 0) {
+                chainDelay = 0;
+                if (whichEraseDrop) {
+                    ErasePuyo();
+                } else {
+                    DropPuyo();
+                    UpdateLinkedNum();
+                }
+                whichEraseDrop = !whichEraseDrop;
+                if (whichEraseDrop && !Chains()) {
+                    isChaining = false;
+                    UpdateMoveableField();
+                }
+            }
+            chainDelay++;
+        }
 
-    //         if (delay % waitCount == 0) {
-    //             delay = 0;
-    //             MoveDown();
-    //             if (isPuyoLanding()) {
-    //                 PutPuyo();
-    //                 UpdateLinkedNum();
-    //                 UpdateMoveableField();
-    //                 if (Chains()) {
-    //                     isChaining = true;
-    //                 }
-    //                 GeneratePuyo();
-    //             }
-    //         }
-    //         delay++;
-    //     } else {
-    //         if (chainDelay % chainWaitCount == 0) {
-    //             chainDelay = 0;
-    //             if (whichEraseDrop) {
-    //                 ErasePuyo();
-    //             } else {
-    //                 DropPuyo();
-    //                 UpdateLinkedNum();
-    //             }
-    //             whichEraseDrop = !whichEraseDrop;
-    //             if (whichEraseDrop && !Chains()) {
-    //                 isChaining = false;
-    //                 UpdateMoveableField();
-    //             }
-    //         }
-    //         chainDelay++;
-    //     }
-
-    //     cui::Display();
-    // }
+        cui::Display();
+    }
 
     cui::EndFrame();
     return 0;
@@ -237,7 +228,7 @@ void UpdateMoveableField() {
     for (int y = 0; y < GetLine(); y++) {
         for (int x = 0; x < GetColumn(); x++) {
             puyocolor c = field_color.GetValue(y, x);
-            field_moveable.SetValue(y, x, c == NONE);
+            field_moveable.SetValue(y, x, (c == NONE));
         }
     }
 }
@@ -277,25 +268,23 @@ void ErasePuyo() {
     }
 }
 void DropPuyo() {
-    puyocolor *colCache = new puyocolor[GetLine()];
+    fielddata<puyocolor> colCache(NONE, GetLine(), 1);
     int targetIndex = 0;
     for (int x = 0; x < GetColumn(); x++) {
         // y = 0 のときは上にぷよないのでスルー
-        for (int i = 0; i < GetLine(); i++) {
-            colCache[i] = NONE;
-        }
+        colCache.ResetData();
+
         for (int y = GetLine() - 1; y > 0; y--) {
             if (field_color.GetValue(y, x) != NONE) {
-                colCache[targetIndex] = field_color.GetValue(y, x);
+                colCache.SetValue(targetIndex, 1, field_color.GetValue(y, x));
                 targetIndex++;
             }
         }
         for (int y = 0; y < GetLine(); y++) {
-            field_color.SetValue(GetLine() - y - 1, x, colCache[y]);
+            field_color.SetValue(GetLine() - y - 1, x, colCache.GetValue(y, 1));
         }
         targetIndex = 0;
     }
-    delete[] colCache;
 }
 
 void Move(direction dir) {
@@ -377,6 +366,7 @@ void Rotate(direction dir) {
     }
 }
 void PutPuyo() {
+    // exit(0);
     UpdateSubPuyoAxis();
     field_color.SetValue(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
     field_color.SetValue(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);

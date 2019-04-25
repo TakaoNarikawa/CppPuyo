@@ -10,9 +10,18 @@
 template <typename T>
 class fielddata {
    public:
-    void ChangeDataSize(unsigned int line, unsigned int column) {
-        data = new T[line * column];
+    fielddata() {
+        data = NULL;
+        defaultValue = (T)0;
+        line = 0;
+        column = 0;
     }
+    fielddata(T defaultValue, int line, int column)
+        : defaultValue(defaultValue), line(line), column(column) {
+        ChangeDataSize(line, column);
+    }
+    ~fielddata(){};
+
     bool isInRange(unsigned int y, unsigned int x) {
         return y < line && x < column;
     }
@@ -36,9 +45,19 @@ class fielddata {
             }
         }
     }
-    fielddata(T defaultValue)
-        : defaultValue(defaultValue), line(0), column(0) {}
-    ~fielddata() { ReleaseData(); };
+    void ChangeDataSize(unsigned int _line, unsigned int _column) {
+        std::cout << "change data size" << std::endl;
+        std::cout << typeid(T).name() << std::endl;
+        std::cout << "1" << std::endl;
+        ReleaseData();
+        std::cout << "2" << std::endl;
+        data = new T[line * column];
+        std::cout << "3" << std::endl;
+        line = _line;
+        column = _column;
+        ResetData();
+        std::cout << "4" << std::endl;
+    }
 
    private:
     T *data;
