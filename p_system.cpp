@@ -6,14 +6,12 @@
 using namespace std;
 
 int main(int argc, char **argv) {
-    cout << "start" << endl;
     // 初期化
-    // cui::InitCurses();
+    cui::InitCurses();
     unsigned int rows = 13;
     unsigned int cols = 6;
 
     ChangeDataSize(rows, cols);
-    cout << "changedata size" << endl;
 
     UpdateLinkedNum();
     UpdateMoveableField();
@@ -102,11 +100,11 @@ int main(int argc, char **argv) {
 namespace sys {
 //盤面サイズ変更
 void ChangeDataSize(unsigned int rows, unsigned int cols) {
-    // field_color.ChangeDataSize(rows, cols);
-    // field_moveable.ChangeDataSize(rows, cols);
-    // field_linked_num.ChangeDataSize(rows, cols);
-    // field_linked_num_scanned.ChangeDataSize(rows, cols);
-    // field_linked_num_applied.ChangeDataSize(rows, cols);
+    field_color.ChangeDataSize(rows, cols);
+    field_moveable.ChangeDataSize(rows, cols);
+    field_linked_num.ChangeDataSize(rows, cols);
+    field_linked_num_scanned.ChangeDataSize(rows, cols);
+    field_linked_num_applied.ChangeDataSize(rows, cols);
     data_rows = rows;
     data_cols = cols;
 }

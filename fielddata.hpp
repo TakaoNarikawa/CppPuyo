@@ -1,12 +1,16 @@
 #ifndef _FIELDDATA_H_
 #define _FIELDDATA_H_
 
+#include <vector>
+
 using namespace std;
 
 template <typename T>
 class FieldData {
    public:
     FieldData() : data(0), defaultValue((T)0), rows(0), cols(0) {}
+    FieldData(T defaultValue)
+        : data(0), defaultValue(defaultValue), rows(0), cols(0) {}
     FieldData(T defaultValue, int rows, int cols)
         : data(rows * cols, defaultValue),
           defaultValue(defaultValue),
@@ -16,13 +20,11 @@ class FieldData {
         return y < rows && x < cols;
     }
     T GetValue(unsigned int y, unsigned int x) {
-        // cout << "getvalue" << endl;
-        return isInRange(y, x) ? data[y * rows + x] : defaultValue;
+        return isInRange(y, x) ? data[y * cols + x] : defaultValue;
     }
     void SetValue(unsigned int y, unsigned int x, T value) {
-        // cout << "setvalue" << endl;
         if (!isInRange(y, x)) return;
-        data[y * rows + x] = value;
+        data[y * cols + x] = value;
     }
     void ChangeDataSize(unsigned int _rows, unsigned int _cols) {
         data.resize(_cols * _rows);
