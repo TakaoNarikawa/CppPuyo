@@ -10,27 +10,34 @@
 template <typename T>
 class FieldData {
    public:
-    FieldData() : data(0), defaultValue((T)0), rows(0), cols(0);
-    FieldData(int rows, int cols, T defaultValue)
+    FieldData() : data(0), defaultValue((T)0), rows(0), cols(0) {}
+    FieldData(T defaultValue, int rows, int cols)
         : data(rows * cols, defaultValue),
           defaultValue(defaultValue),
           rows(rows),
-          cols(cols);
+          cols(cols) {}
 
     bool isInRange(unsigned int y, unsigned int x) {
-        return y < line && x < column;
+        return y < rows && x < cols;
     }
     T GetValue(unsigned int y, unsigned int x) {
-        return isInRange(y, x) ? data[y * column + x] : defaultValue;
+        return isInRange(y, x) ? data[y * rows + x] : defaultValue;
     }
     void SetValue(unsigned int y, unsigned int x, T value) {
         if (!isInRange(y, x)) return;
-        data[y * column + x] = value;
+        data[y * cols + x] = value;
     }
-    void ChangeDataSize(unsigned int _cols, unsigned int _rows) {
+    void ChangeDataSize(unsigned int _rows, unsigned int _cols) {
         data.resize(_cols * _rows);
         rows = _rows;
         cols = _cols;
+    }
+    void ResetData() {
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                SetValue(y, x, defaultValue);
+            }
+        }
     }
 
    private:
@@ -38,7 +45,7 @@ class FieldData {
     T defaultValue;
     int rows;
     int cols;
-}
+};
 
 // class FieldData {
 //    private:
@@ -64,7 +71,7 @@ class FieldData {
 // void SetValue(unsigned int y, unsigned int x, T value) {
 //     if (!isInRange(y, x)) return;
 //     data[y * column + x] = value;
-}
+// }
 //     void ReleaseData() {
 //         if (data == NULL) {
 //             return;

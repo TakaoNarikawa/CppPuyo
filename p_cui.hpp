@@ -52,45 +52,45 @@ void DrawNextPuyo() {
     DrawPuyo(4, GetRow() + 1, puyoNext[cPuyoIndex + 1].sub);
 }
 void DrawMoveable() {
-    for (int y = 0; y < GetCol(); y++) {
-        for (int x = 0; x < GetRow(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             char c = isMoveable(y, x) ? 'T' : 'F';
-            DrawObject(y, x + GetRow() * 1 + 4, c, 5);
+            DrawObject(y, x + GetCol() * 1 + 4, c, 5);
         }
     }
 }
 void DrawLinkedNum() {
-    for (int y = 0; y < GetCol(); y++) {
-        for (int x = 0; x < GetRow(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             char c = '0' + field_linked_num.GetValue(y, x);
-            DrawObject(y, x + GetRow() * 2 + 6, c, 5);
+            DrawObject(y, x + GetCol() * 2 + 6, c, 5);
         }
     }
 }
 void DrawRawField() {
-    for (int y = 0; y < GetCol(); y++) {
-        for (int x = 0; x < GetRow(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             char c = '0' + field_linked_num.GetValue(y, x);
             DrawObject(y, x + GetRow() * 3 + 8, c, 5);
         }
     }
 }
 void DrawFrame() {
-    for (int y = 0; y < GetCol() + 2; y++) {
+    for (int y = 0; y < GetRow() + 2; y++) {
         mvaddch(y, 0, '#');
-        int x = FieldAdjustX(GetRow() - 1) + 1;
+        int x = FieldAdjustX(GetCol() - 1) + 1;
         mvaddch(y, x, '#');
     }
-    for (int x = 1; x < GetRow() * 2 + 1; x++) {
+    for (int x = 1; x < GetCol() * 2 + 1; x++) {
         mvaddch(0, x, '#');
-        int y = FieldAdjustY(GetCol());
+        int y = FieldAdjustY(GetRow());
         mvaddch(y, x, '#');
     }
 }
 
 void Display() {
-    for (int y = 0; y < GetCol(); y++) {
-        for (int x = 0; x < GetRow(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             puyocolor c = field_color.GetValue(y, x);
             DrawPuyo(y, x, c);
         }
@@ -109,8 +109,8 @@ void Display() {
 
     //情報表示
     int count = 0;
-    for (int y = 0; y < GetCol(); y++) {
-        for (int x = 0; x < GetRow(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             if (field_color.GetValue(y, x) != NONE) {
                 count++;
             }
@@ -118,11 +118,11 @@ void Display() {
     }
 
     char msg[256];
-    sprintf(msg, "Field: %d x %d, Pnum: %03d, r %d", GetCol(), GetRow(), count,
+    sprintf(msg, "Field: %d x %d, Pnum: %03d, r %d", GetRow(), GetCol(), count,
             (int)rotate_state);
 
     mvaddstr(2, COLS - 35, msg);
-    mvaddstr(0, GetRow() * 2 + 1, "next");
+    mvaddstr(0, GetCol() * 2 + 1, "next");
     refresh();
 }
 }  // namespace cui
