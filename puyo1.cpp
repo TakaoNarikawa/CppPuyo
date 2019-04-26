@@ -29,25 +29,25 @@ void ChangeSize(unsigned int line, unsigned int column) {
     data_column = column;
 }
 
-unsigned int GetLine() { return data_line; }
-unsigned int GetColumn() { return data_column; }
+unsigned int GetRow() { return data_line; }
+unsigned int GetCol() { return data_column; }
 
 puyocolor GetValue(unsigned int y, unsigned int x) {
-    if (y >= GetLine() || x >= GetColumn()) {
+    if (y >= GetRow() || x >= GetCol()) {
         //引数の値が正しくない
         return NONE;
     }
 
-    return data[y * GetColumn() + x];
+    return data[y * GetCol() + x];
 }
 
 void SetValue(unsigned int y, unsigned int x, puyocolor value) {
-    if (y >= GetLine() || x >= GetColumn()) {
+    if (y >= GetRow() || x >= GetCol()) {
         //引数の値が正しくない
         return;
     }
 
-    data[y * GetColumn() + x] = value;
+    data[y * GetCol() + x] = value;
 }
 
 void GeneratePuyo() {
@@ -65,9 +65,9 @@ void GeneratePuyo() {
 bool LandingPuyo() {
     bool landed = false;
 
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
-            if (GetValue(y, x) != NONE && y == GetLine() - 1) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
+            if (GetValue(y, x) != NONE && y == GetRow() - 1) {
                 landed = true;
 
                 //着地判定されたぷよを消す．本処理は必要に応じて変更する．
@@ -81,33 +81,33 @@ bool LandingPuyo() {
 
 void MoveLeft() {
     //一時的格納場所メモリ確保
-    puyocolor *puyo_temp = new puyocolor[GetLine() * GetColumn()];
+    puyocolor *puyo_temp = new puyocolor[GetRow() * GetCol()];
 
-    for (int i = 0; i < GetLine() * GetColumn(); i++) {
+    for (int i = 0; i < GetRow() * GetCol(); i++) {
         puyo_temp[i] = NONE;
     }
 
     // 1つ左の位置にpuyoactiveからpuyo_tempへとコピー
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             if (GetValue(y, x) == NONE) {
                 continue;
             }
 
             if (0 < x && GetValue(y, x - 1) == NONE) {
-                puyo_temp[y * GetColumn() + (x - 1)] = GetValue(y, x);
+                puyo_temp[y * GetCol() + (x - 1)] = GetValue(y, x);
                 //コピー後に元位置のpuyoactiveのデータは消す
                 SetValue(y, x, NONE);
             } else {
-                puyo_temp[y * GetColumn() + x] = GetValue(y, x);
+                puyo_temp[y * GetCol() + x] = GetValue(y, x);
             }
         }
     }
 
     // puyo_tempからpuyoactiveへコピー
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
-            SetValue(y, x, puyo_temp[y * GetColumn() + x]);
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
+            SetValue(y, x, puyo_temp[y * GetCol() + x]);
         }
     }
 
@@ -117,33 +117,33 @@ void MoveLeft() {
 
 void MoveRight() {
     //一時的格納場所メモリ確保
-    puyocolor *puyo_temp = new puyocolor[GetLine() * GetColumn()];
+    puyocolor *puyo_temp = new puyocolor[GetRow() * GetCol()];
 
-    for (int i = 0; i < GetLine() * GetColumn(); i++) {
+    for (int i = 0; i < GetRow() * GetCol(); i++) {
         puyo_temp[i] = NONE;
     }
 
     // 1つ右の位置にpuyoactiveからpuyo_tempへとコピー
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = GetColumn() - 1; x >= 0; x--) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = GetCol() - 1; x >= 0; x--) {
             if (GetValue(y, x) == NONE) {
                 continue;
             }
 
-            if (x < GetColumn() - 1 && GetValue(y, x + 1) == NONE) {
-                puyo_temp[y * GetColumn() + (x + 1)] = GetValue(y, x);
+            if (x < GetCol() - 1 && GetValue(y, x + 1) == NONE) {
+                puyo_temp[y * GetCol() + (x + 1)] = GetValue(y, x);
                 //コピー後に元位置のpuyoactiveのデータは消す
                 SetValue(y, x, NONE);
             } else {
-                puyo_temp[y * GetColumn() + x] = GetValue(y, x);
+                puyo_temp[y * GetCol() + x] = GetValue(y, x);
             }
         }
     }
 
     // puyo_tempからpuyoactiveへコピー
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
-            SetValue(y, x, puyo_temp[y * GetColumn() + x]);
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
+            SetValue(y, x, puyo_temp[y * GetCol() + x]);
         }
     }
 
@@ -153,33 +153,33 @@ void MoveRight() {
 
 void MoveDown() {
     //一時的格納場所メモリ確保
-    puyocolor *puyo_temp = new puyocolor[GetLine() * GetColumn()];
+    puyocolor *puyo_temp = new puyocolor[GetRow() * GetCol()];
 
-    for (int i = 0; i < GetLine() * GetColumn(); i++) {
+    for (int i = 0; i < GetRow() * GetCol(); i++) {
         puyo_temp[i] = NONE;
     }
 
     // 1つ下の位置にpuyoactiveからpuyo_tempへとコピー
-    for (int y = GetLine() - 1; y >= 0; y--) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = GetRow() - 1; y >= 0; y--) {
+        for (int x = 0; x < GetCol(); x++) {
             if (GetValue(y, x) == NONE) {
                 continue;
             }
 
-            if (y < GetLine() - 1 && GetValue(y + 1, x) == NONE) {
-                puyo_temp[(y + 1) * GetColumn() + x] = GetValue(y, x);
+            if (y < GetRow() - 1 && GetValue(y + 1, x) == NONE) {
+                puyo_temp[(y + 1) * GetCol() + x] = GetValue(y, x);
                 //コピー後に元位置のpuyoactiveのデータは消す
                 SetValue(y, x, NONE);
             } else {
-                puyo_temp[y * GetColumn() + x] = GetValue(y, x);
+                puyo_temp[y * GetCol() + x] = GetValue(y, x);
             }
         }
     }
 
     // puyo_tempからpuyoactiveへコピー
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
-            SetValue(y, x, puyo_temp[y * GetColumn() + x]);
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
+            SetValue(y, x, puyo_temp[y * GetCol() + x]);
         }
     }
 
@@ -189,8 +189,8 @@ void MoveDown() {
 
 void Display() {
     //落下中ぷよ表示
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             switch (GetValue(y, x)) {
                 case NONE:
                     mvaddch(y, x, '.');
@@ -216,8 +216,8 @@ void Display() {
 
     //情報表示
     int count = 0;
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             if (GetValue(y, x) != NONE) {
                 count++;
             }
@@ -225,7 +225,7 @@ void Display() {
     }
 
     char msg[256];
-    sprintf(msg, "Field: %d x %d, Puyo number: %03d", GetLine(), GetColumn(),
+    sprintf(msg, "Field: %d x %d, Puyo number: %03d", GetRow(), GetCol(),
             count);
     mvaddstr(2, COLS - 35, msg);
 

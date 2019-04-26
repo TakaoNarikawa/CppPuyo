@@ -35,11 +35,11 @@ puyopair puyoNext[1000];
 int cPuyoIndex = 0;
 puyocolor c_puyo_color[2] = {RED, BLUE};
 
-unsigned int data_line = 0;
-unsigned int data_column = 0;
+unsigned int data_rows = 0;
+unsigned int data_cols = 0;
 
-unsigned int GetLine() { return data_line; }
-unsigned int GetColumn() { return data_column; }
+unsigned int GetRow() { return data_rows; }
+unsigned int GetCol() { return data_cols; }
 
 void ReleaseData();
 void ChangeDataSize(unsigned int line, unsigned int column);

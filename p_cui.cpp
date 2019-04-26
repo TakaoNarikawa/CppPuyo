@@ -135,37 +135,37 @@ void DrawPuyo(int y, int x, puyocolor p) {
 }
 
 void DrawNextPuyo() {
-    DrawPuyo(2, GetColumn() + 1, nextPuyoSet[cPuyoIndex].main);
-    DrawPuyo(1, GetColumn() + 1, nextPuyoSet[cPuyoIndex].sub);
+    DrawPuyo(2, GetCol() + 1, nextPuyoSet[cPuyoIndex].main);
+    DrawPuyo(1, GetCol() + 1, nextPuyoSet[cPuyoIndex].sub);
 
-    DrawPuyo(5, GetColumn() + 1, nextPuyoSet[cPuyoIndex + 1].main);
-    DrawPuyo(4, GetColumn() + 1, nextPuyoSet[cPuyoIndex + 1].sub);
+    DrawPuyo(5, GetCol() + 1, nextPuyoSet[cPuyoIndex + 1].main);
+    DrawPuyo(4, GetCol() + 1, nextPuyoSet[cPuyoIndex + 1].sub);
 }
 void DrawMoveable() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             char c = isMoveable(y, x) ? 'T' : 'F';
-            DrawObject(y, x + GetColumn() * 1 + 4, c, 5);
+            DrawObject(y, x + GetCol() * 1 + 4, c, 5);
         }
     }
 }
 void DrawLinkedNum() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             char c = '0' + GetFieldInt(field_linked_num, y, x);
-            DrawObject(y, x + GetColumn() * 2 + 6, c, 5);
+            DrawObject(y, x + GetCol() * 2 + 6, c, 5);
         }
     }
 }
 void DrawFrame() {
-    for (int y = 0; y < GetLine() + 2; y++) {
+    for (int y = 0; y < GetRow() + 2; y++) {
         mvaddch(y, 0, '#');
-        int x = FieldAdjustX(GetColumn() - 1) + 1;
+        int x = FieldAdjustX(GetCol() - 1) + 1;
         mvaddch(y, x, '#');
     }
-    for (int x = 1; x < GetColumn() * 2 + 1; x++) {
+    for (int x = 1; x < GetCol() * 2 + 1; x++) {
         mvaddch(0, x, '#');
-        int y = FieldAdjustY(GetLine());
+        int y = FieldAdjustY(GetRow());
         mvaddch(y, x, '#');
     }
 }
@@ -173,8 +173,8 @@ void DrawFrame() {
 void Display() {
     // clear();
     //フィールドぷよ表示
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             puyocolor c = GetFieldColor(y, x);
             DrawPuyo(y, x, c);
         }
@@ -193,8 +193,8 @@ void Display() {
 
     //情報表示
     int count = 0;
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             if (GetFieldColor(y, x) != NONE) {
                 count++;
             }
@@ -202,11 +202,11 @@ void Display() {
     }
 
     char msg[256];
-    sprintf(msg, "Field: %d x %d, Pnum: %03d, r %d", GetLine(), GetColumn(),
-            count, (int)rotate_state);
+    sprintf(msg, "Field: %d x %d, Pnum: %03d, r %d", GetRow(), GetCol(), count,
+            (int)rotate_state);
 
     mvaddstr(2, COLS - 35, msg);
-    mvaddstr(0, GetColumn() * 2 + 1, "next");
+    mvaddstr(0, GetCol() * 2 + 1, "next");
     refresh();
 }
 

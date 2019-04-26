@@ -6,9 +6,9 @@
 int main(int argc, char **argv) {
     // 初期化
     cui::InitCurses();
-    int lines = 6;
-    int cols = 13;
-    ChangeDataSize(13, 6);
+    int rows = 13;
+    int cols = 6;
+    ChangeDataSize(rows, cols);
 
     UpdateLinkedNum();
     UpdateMoveableField();
@@ -36,23 +36,23 @@ int main(int argc, char **argv) {
                 break;
             }
             switch (ch) {
-            case 'a':
-                MoveLeft();
-                break;
-            case 'd':
-                MoveRight();
-                break;
-            case 's':
-                MoveDown();
-                break;
-            case 'j':
-                RotateLeft();
-                break;
-            case 'k':
-                RotateRight();
-                break;
-            default:
-                break;
+                case 'a':
+                    MoveLeft();
+                    break;
+                case 'd':
+                    MoveRight();
+                    break;
+                case 's':
+                    MoveDown();
+                    break;
+                case 'j':
+                    RotateLeft();
+                    break;
+                case 'k':
+                    RotateRight();
+                    break;
+                default:
+                    break;
             }
 
             if (delay % waitCount == 0) {
@@ -103,56 +103,56 @@ void ReleaseData() {
     field_color = NULL;
 }
 //盤面サイズ変更
-void ChangeDataSize(unsigned int line, unsigned int column) {
-    field_color = new puyocolor[line * column];
-    field_moveable = new bool[line * column];
-    field_linked_num = new int[line * column];
-    field_linked_num_scanned = new bool[line * column];
-    field_linked_num_applied = new bool[line * column];
-    data_line = line;
-    data_column = column;
+void ChangeDataSize(unsigned int rows, unsigned int cols) {
+    field_color = new puyocolor[rows * cols];
+    field_moveable = new bool[rows * cols];
+    field_linked_num = new int[rows * cols];
+    field_linked_num_scanned = new bool[rows * cols];
+    field_linked_num_applied = new bool[rows * cols];
+    data_rows = rows;
+    data_cols = cols;
 }
 
 bool ValueCheck(unsigned int y, unsigned int x) {
-    return y < GetLine() && x < GetColumn();
+    return y < GetRow() && x < GetCol();
 }
 puyocolor GetFieldColor(unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? field_color[y * GetColumn() + x] : NONE;
+    return ValueCheck(y, x) ? field_color[y * GetCol() + x] : NONE;
 }
 void SetFieldColor(unsigned int y, unsigned int x, puyocolor value) {
     if (!ValueCheck(y, x)) return;
-    field_color[y * GetColumn() + x] = value;
+    field_color[y * GetCol() + x] = value;
 }
 int GetFieldInt(int *data, unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? data[y * GetColumn() + x] : 0;
+    return ValueCheck(y, x) ? data[y * GetCol() + x] : 0;
 }
 void SetFieldInt(int *data, unsigned int y, unsigned int x, int value) {
     if (!ValueCheck(y, x)) return;
-    data[y * GetColumn() + x] = value;
+    data[y * GetCol() + x] = value;
 }
 bool GetFieldBool(bool *data, unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? data[y * GetColumn() + x] : false;
+    return ValueCheck(y, x) ? data[y * GetCol() + x] : false;
 }
 
 void SetFieldBool(bool *data, unsigned int y, unsigned int x, bool value) {
     if (!ValueCheck(y, x)) return;
-    data[y * GetColumn() + x] = value;
+    data[y * GetCol() + x] = value;
 }
 void UpdateSubPuyoAxis() {
     memcpy(s_puyo_axis, m_puyo_axis, sizeof(m_puyo_axis));
     switch (rotate_state) {
-    case UP:
-        s_puyo_axis[0]--;
-        break;
-    case DOWN:
-        s_puyo_axis[0]++;
-        break;
-    case LEFT:
-        s_puyo_axis[1]--;
-        break;
-    case RIGHT:
-        s_puyo_axis[1]++;
-        break;
+        case UP:
+            s_puyo_axis[0]--;
+            break;
+        case DOWN:
+            s_puyo_axis[0]++;
+            break;
+        case LEFT:
+            s_puyo_axis[1]--;
+            break;
+        case RIGHT:
+            s_puyo_axis[1]++;
+            break;
     }
 }
 int *GetSubPuyoAxis() {
@@ -193,9 +193,9 @@ directionBoolSet GetLinkedDir(unsigned int y, unsigned x) {
     puyocolor currentColor = GetFieldColor(y, x);
 
     dirs.up = y != 0 && GetFieldColor(y - 1, x) == currentColor;
-    dirs.down = y < GetLine() - 1 && GetFieldColor(y + 1, x) == currentColor;
+    dirs.down = y < GetRow() - 1 && GetFieldColor(y + 1, x) == currentColor;
     dirs.left = x != 0 && GetFieldColor(y, x - 1) == currentColor;
-    dirs.right = x < GetColumn() - 1 && GetFieldColor(y, x + 1) == currentColor;
+    dirs.right = x < GetCol() - 1 && GetFieldColor(y, x + 1) == currentColor;
 
     return dirs;
 }
@@ -237,8 +237,8 @@ void ApplyLinkedNum(unsigned int y, unsigned int x, int num) {
     }
 }
 void UpdateLinkedNum() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             if (GetFieldColor(y, x) != NONE) {
                 if (!GetFieldBool(field_linked_num_applied, y, x)) {
                     int num = GetLinkedNum(y, x);
@@ -251,21 +251,21 @@ void UpdateLinkedNum() {
             }
         }
     }
-    field_linked_num_scanned = new bool[GetLine() * GetColumn()];
-    field_linked_num_applied = new bool[GetLine() * GetColumn()];
+    field_linked_num_scanned = new bool[GetRow() * GetCol()];
+    field_linked_num_applied = new bool[GetRow() * GetCol()];
 }
 // -- 連結数 計算 end --
 
 void UpdateMoveableField() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             puyocolor c = GetFieldColor(y, x);
             SetFieldBool(field_moveable, y, x, c == NONE);
         }
     }
 }
 bool isMoveable(int y, int x) {
-    if (x < 0 || x >= GetColumn() || y >= GetLine()) {
+    if (x < 0 || x >= GetCol() || y >= GetRow()) {
         return false;
     }
     if (y < 0) {
@@ -282,8 +282,8 @@ bool isPuyoLanding() {  //　　書き換えろ
 }
 
 bool Chains() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             if (GetFieldInt(field_linked_num, y, x) >= 4) {
                 return true;
             }
@@ -292,8 +292,8 @@ bool Chains() {
     return false;
 }
 void ErasePuyo() {
-    for (int y = 0; y < GetLine(); y++) {
-        for (int x = 0; x < GetColumn(); x++) {
+    for (int y = 0; y < GetRow(); y++) {
+        for (int x = 0; x < GetCol(); x++) {
             if (GetFieldInt(field_linked_num, y, x) >= 4) {
                 SetFieldColor(y, x, NONE);
             }
@@ -301,21 +301,21 @@ void ErasePuyo() {
     }
 }
 void DropPuyo() {
-    puyocolor *colCache = new puyocolor[GetLine()];
+    puyocolor *colCache = new puyocolor[GetRow()];
     int targetIndex = 0;
-    for (int x = 0; x < GetColumn(); x++) {
+    for (int x = 0; x < GetCol(); x++) {
         // y = 0 のときは上にぷよないのでスルー
-        for (int i = 0; i < GetLine(); i++) {
+        for (int i = 0; i < GetRow(); i++) {
             colCache[i] = NONE;
         }
-        for (int y = GetLine() - 1; y > 0; y--) {
+        for (int y = GetRow() - 1; y > 0; y--) {
             if (GetFieldColor(y, x) != NONE) {
                 colCache[targetIndex] = GetFieldColor(y, x);
                 targetIndex++;
             }
         }
-        for (int y = 0; y < GetLine(); y++) {
-            SetFieldColor(GetLine() - y - 1, x, colCache[y]);
+        for (int y = 0; y < GetRow(); y++) {
+            SetFieldColor(GetRow() - y - 1, x, colCache[y]);
         }
         targetIndex = 0;
     }
@@ -327,36 +327,36 @@ void Move(direction dir) {
     bool moveable;
 
     switch (dir) {
-    case UP:
-        moveable = isMoveable(m_puyo_axis[0] - 1, m_puyo_axis[1]) &&
-                   isMoveable(s_puyo_axis[0] - 1, s_puyo_axis[1]);
-        if (moveable) {
-            m_puyo_axis[0]--;
-        }
-        break;
-    case DOWN:
-        moveable = isMoveable(m_puyo_axis[0] + 1, m_puyo_axis[1]) &&
-                   isMoveable(s_puyo_axis[0] + 1, s_puyo_axis[1]);
-        if (moveable) {
-            m_puyo_axis[0]++;
-        }
-        break;
-    case LEFT:
-        moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] - 1) &&
-                   isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1);
-        if (moveable) {
-            m_puyo_axis[1]--;
-        }
-        break;
-    case RIGHT:
-        moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] + 1) &&
-                   isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1);
-        if (moveable) {
-            m_puyo_axis[1]++;
-        }
-        break;
-    default:
-        return;
+        case UP:
+            moveable = isMoveable(m_puyo_axis[0] - 1, m_puyo_axis[1]) &&
+                       isMoveable(s_puyo_axis[0] - 1, s_puyo_axis[1]);
+            if (moveable) {
+                m_puyo_axis[0]--;
+            }
+            break;
+        case DOWN:
+            moveable = isMoveable(m_puyo_axis[0] + 1, m_puyo_axis[1]) &&
+                       isMoveable(s_puyo_axis[0] + 1, s_puyo_axis[1]);
+            if (moveable) {
+                m_puyo_axis[0]++;
+            }
+            break;
+        case LEFT:
+            moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] - 1) &&
+                       isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1);
+            if (moveable) {
+                m_puyo_axis[1]--;
+            }
+            break;
+        case RIGHT:
+            moveable = isMoveable(m_puyo_axis[0], m_puyo_axis[1] + 1) &&
+                       isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1);
+            if (moveable) {
+                m_puyo_axis[1]++;
+            }
+            break;
+        default:
+            return;
     }
 }
 void CheckRotate(direction dir) {
@@ -367,7 +367,7 @@ void CheckRotate(direction dir) {
     }
     //右も左も!moveable
     if (!isMoveable(s_puyo_axis[0], s_puyo_axis[1] + 1) &&
-            !isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1)) {
+        !isMoveable(s_puyo_axis[0], s_puyo_axis[1] - 1)) {
         Rotate(dir);
     }
     //壁蹴りで左移動
@@ -388,16 +388,16 @@ void CheckRotate(direction dir) {
 }
 void Rotate(direction dir) {
     switch (dir) {
-    case LEFT:
-        rotate_state = (direction)(((int)rotate_state + 1) % 4);
-        CheckRotate(dir);
-        break;
-    case RIGHT:
-        rotate_state = (direction)(((int)rotate_state + 3) % 4);
-        CheckRotate(dir);
-        break;
-    default:  // never happen
-        break;
+        case LEFT:
+            rotate_state = (direction)(((int)rotate_state + 1) % 4);
+            CheckRotate(dir);
+            break;
+        case RIGHT:
+            rotate_state = (direction)(((int)rotate_state + 3) % 4);
+            CheckRotate(dir);
+            break;
+        default:  // never happen
+            break;
     }
 }
 void PutPuyo() {
