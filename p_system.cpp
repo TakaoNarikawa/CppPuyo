@@ -3,12 +3,17 @@
 #include <iostream>
 #include "p_cui.hpp"
 
+using namespace std;
+
 int main(int argc, char **argv) {
+    cout << "start" << endl;
     // 初期化
-    cui::InitCurses();
-    int rows = 13;
-    int cols = 6;
+    // cui::InitCurses();
+    unsigned int rows = 13;
+    unsigned int cols = 6;
+
     ChangeDataSize(rows, cols);
+    cout << "changedata size" << endl;
 
     UpdateLinkedNum();
     UpdateMoveableField();
@@ -95,48 +100,15 @@ int main(int argc, char **argv) {
 }
 
 namespace sys {
-void ReleaseData() {
-    if (field_color == NULL) {
-        return;
-    }
-    delete[] field_color;
-    field_color = NULL;
-}
 //盤面サイズ変更
 void ChangeDataSize(unsigned int rows, unsigned int cols) {
-    field_color = new puyocolor[rows * cols];
-    field_moveable = new bool[rows * cols];
-    field_linked_num = new int[rows * cols];
-    field_linked_num_scanned = new bool[rows * cols];
-    field_linked_num_applied = new bool[rows * cols];
+    // field_color.ChangeDataSize(rows, cols);
+    // field_moveable.ChangeDataSize(rows, cols);
+    // field_linked_num.ChangeDataSize(rows, cols);
+    // field_linked_num_scanned.ChangeDataSize(rows, cols);
+    // field_linked_num_applied.ChangeDataSize(rows, cols);
     data_rows = rows;
     data_cols = cols;
-}
-
-bool ValueCheck(unsigned int y, unsigned int x) {
-    return y < GetRow() && x < GetCol();
-}
-puyocolor GetFieldColor(unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? field_color[y * GetCol() + x] : NONE;
-}
-void SetFieldColor(unsigned int y, unsigned int x, puyocolor value) {
-    if (!ValueCheck(y, x)) return;
-    field_color[y * GetCol() + x] = value;
-}
-int GetFieldInt(int *data, unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? data[y * GetCol() + x] : 0;
-}
-void SetFieldInt(int *data, unsigned int y, unsigned int x, int value) {
-    if (!ValueCheck(y, x)) return;
-    data[y * GetCol() + x] = value;
-}
-bool GetFieldBool(bool *data, unsigned int y, unsigned int x) {
-    return ValueCheck(y, x) ? data[y * GetCol() + x] : false;
-}
-
-void SetFieldBool(bool *data, unsigned int y, unsigned int x, bool value) {
-    if (!ValueCheck(y, x)) return;
-    data[y * GetCol() + x] = value;
 }
 void UpdateSubPuyoAxis() {
     memcpy(s_puyo_axis, m_puyo_axis, sizeof(m_puyo_axis));
@@ -190,77 +162,79 @@ void GeneratePuyo() {
 // -- 連結数 計算 start --
 directionBoolSet GetLinkedDir(unsigned int y, unsigned x) {
     directionBoolSet dirs = directionBoolSet();
-    puyocolor currentColor = GetFieldColor(y, x);
+    puyocolor currentColor = field_color.GetValue(y, x);
 
-    dirs.up = y != 0 && GetFieldColor(y - 1, x) == currentColor;
-    dirs.down = y < GetRow() - 1 && GetFieldColor(y + 1, x) == currentColor;
-    dirs.left = x != 0 && GetFieldColor(y, x - 1) == currentColor;
-    dirs.right = x < GetCol() - 1 && GetFieldColor(y, x + 1) == currentColor;
+    dirs.up = y != 0 && field_color.GetValue(y - 1, x) == currentColor;
+    dirs.down =
+        y < GetRow() - 1 && field_color.GetValue(y + 1, x) == currentColor;
+    dirs.left = x != 0 && field_color.GetValue(y, x - 1) == currentColor;
+    dirs.right =
+        x < GetCol() - 1 && field_color.GetValue(y, x + 1) == currentColor;
 
     return dirs;
 }
 int GetLinkedNum(unsigned int y, unsigned x) {
-    SetFieldBool(field_linked_num_scanned, y, x, true);
+    field_linked_num_scanned.SetValue(y, x, true);
     int num = 1;
     directionBoolSet dirs = GetLinkedDir(y, x);
 
-    if (dirs.up && !GetFieldBool(field_linked_num_scanned, y - 1, x)) {
+    if (dirs.up && !field_linked_num_scanned.GetValue(y - 1, x)) {
         num += GetLinkedNum(y - 1, x);
     }
-    if (dirs.down && !GetFieldBool(field_linked_num_scanned, y + 1, x)) {
+    if (dirs.down && !field_linked_num_scanned.GetValue(y + 1, x)) {
         num += GetLinkedNum(y + 1, x);
     }
-    if (dirs.left && !GetFieldBool(field_linked_num_scanned, y, x - 1)) {
+    if (dirs.left && !field_linked_num_scanned.GetValue(y, x - 1)) {
         num += GetLinkedNum(y, x - 1);
     }
-    if (dirs.right && !GetFieldBool(field_linked_num_scanned, y, x + 1)) {
+    if (dirs.right && !field_linked_num_scanned.GetValue(y, x + 1)) {
         num += GetLinkedNum(y, x + 1);
     }
     return num;
 }
 void ApplyLinkedNum(unsigned int y, unsigned int x, int num) {
-    SetFieldBool(field_linked_num_applied, y, x, true);
-    SetFieldInt(field_linked_num, y, x, num);
+    field_linked_num_applied.SetValue(y, x, true);
+    field_linked_num.SetValue(y, x, num);
     directionBoolSet dirs = GetLinkedDir(y, x);
 
-    if (dirs.up && !GetFieldBool(field_linked_num_applied, y - 1, x)) {
+    if (dirs.up && !field_linked_num_applied.GetValue(y - 1, x)) {
         ApplyLinkedNum(y - 1, x, num);
     }
-    if (dirs.down && !GetFieldBool(field_linked_num_applied, y + 1, x)) {
+    if (dirs.down && !field_linked_num_applied.GetValue(y + 1, x)) {
         ApplyLinkedNum(y + 1, x, num);
     }
-    if (dirs.left && !GetFieldBool(field_linked_num_applied, y, x - 1)) {
+    if (dirs.left && !field_linked_num_applied.GetValue(y, x - 1)) {
         ApplyLinkedNum(y, x - 1, num);
     }
-    if (dirs.right && !GetFieldBool(field_linked_num_applied, y, x + 1)) {
+    if (dirs.right && !field_linked_num_applied.GetValue(y, x + 1)) {
         ApplyLinkedNum(y, x + 1, num);
     }
 }
 void UpdateLinkedNum() {
     for (int y = 0; y < GetRow(); y++) {
         for (int x = 0; x < GetCol(); x++) {
-            if (GetFieldColor(y, x) != NONE) {
-                if (!GetFieldBool(field_linked_num_applied, y, x)) {
+            if (field_color.GetValue(y, x) != NONE) {
+                if (!field_linked_num_applied.GetValue(y, x)) {
                     int num = GetLinkedNum(y, x);
                     ApplyLinkedNum(y, x, num);
                 }
             } else {
-                SetFieldInt(field_linked_num, y, x, 0);
-                SetFieldBool(field_linked_num_scanned, y, x, true);
-                SetFieldBool(field_linked_num_applied, y, x, true);
+                field_linked_num.SetValue(y, x, 0);
+                field_linked_num_applied.SetValue(y, x, true);
+                field_linked_num_scanned.SetValue(y, x, true);
             }
         }
     }
-    field_linked_num_scanned = new bool[GetRow() * GetCol()];
-    field_linked_num_applied = new bool[GetRow() * GetCol()];
+    field_linked_num_scanned.ResetData();
+    field_linked_num_applied.ResetData();
 }
 // -- 連結数 計算 end --
 
 void UpdateMoveableField() {
     for (int y = 0; y < GetRow(); y++) {
         for (int x = 0; x < GetCol(); x++) {
-            puyocolor c = GetFieldColor(y, x);
-            SetFieldBool(field_moveable, y, x, c == NONE);
+            puyocolor c = field_color.GetValue(y, x);
+            field_moveable.SetValue(y, x, c == NONE);
         }
     }
 }
@@ -271,7 +245,7 @@ bool isMoveable(int y, int x) {
     if (y < 0) {
         return true;
     }
-    return GetFieldBool(field_moveable, y, x);
+    return field_moveable.GetValue(y, x);
     // return true;
 }
 
@@ -284,7 +258,7 @@ bool isPuyoLanding() {  //　　書き換えろ
 bool Chains() {
     for (int y = 0; y < GetRow(); y++) {
         for (int x = 0; x < GetCol(); x++) {
-            if (GetFieldInt(field_linked_num, y, x) >= 4) {
+            if (field_linked_num.GetValue(y, x) >= 4) {
                 return true;
             }
         }
@@ -294,8 +268,8 @@ bool Chains() {
 void ErasePuyo() {
     for (int y = 0; y < GetRow(); y++) {
         for (int x = 0; x < GetCol(); x++) {
-            if (GetFieldInt(field_linked_num, y, x) >= 4) {
-                SetFieldColor(y, x, NONE);
+            if (field_linked_num.GetValue(y, x) >= 4) {
+                field_color.SetValue(y, x, NONE);
             }
         }
     }
@@ -309,17 +283,16 @@ void DropPuyo() {
             colCache[i] = NONE;
         }
         for (int y = GetRow() - 1; y > 0; y--) {
-            if (GetFieldColor(y, x) != NONE) {
-                colCache[targetIndex] = GetFieldColor(y, x);
+            if (field_color.GetValue(y, x) != NONE) {
+                colCache[targetIndex] = field_color.GetValue(y, x);
                 targetIndex++;
             }
         }
         for (int y = 0; y < GetRow(); y++) {
-            SetFieldColor(GetRow() - y - 1, x, colCache[y]);
+            field_color.SetValue(GetRow() - y - 1, x, colCache[y]);
         }
         targetIndex = 0;
     }
-    delete[] colCache;
 }
 
 void Move(direction dir) {
@@ -402,8 +375,8 @@ void Rotate(direction dir) {
 }
 void PutPuyo() {
     UpdateSubPuyoAxis();
-    SetFieldColor(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
-    SetFieldColor(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
+    field_color.SetValue(m_puyo_axis[0], m_puyo_axis[1], c_puyo_color[0]);
+    field_color.SetValue(s_puyo_axis[0], s_puyo_axis[1], c_puyo_color[1]);
     DropPuyo();
 }
 }  // namespace sys

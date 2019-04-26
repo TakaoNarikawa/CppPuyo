@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <random>
+#include "fielddata.hpp"
 
 enum puyocolor { NONE, RED, BLUE, GREEN, YELLOW };
 enum direction { UP, LEFT, DOWN, RIGHT };
@@ -20,11 +21,11 @@ typedef struct {
 
 namespace sys {
 //盤面状態
-puyocolor *field_color = NULL;
-bool *field_moveable = NULL;
-int *field_linked_num = NULL;
-bool *field_linked_num_scanned = NULL;
-bool *field_linked_num_applied = NULL;
+FieldData<puyocolor> field_color(NONE, 13, 6);
+FieldData<bool> field_moveable(true, 13, 6);
+FieldData<int> field_linked_num(0, 13, 6);
+FieldData<bool> field_linked_num_scanned(false, 13, 6);
+FieldData<bool> field_linked_num_applied(false, 13, 6);
 //操作ぷよ
 direction rotate_state = UP;
 bool isChaining = false;
@@ -41,15 +42,6 @@ unsigned int data_cols = 0;
 unsigned int GetRow() { return data_rows; }
 unsigned int GetCol() { return data_cols; }
 
-void ReleaseData();
-void ChangeDataSize(unsigned int line, unsigned int column);
-bool ValueCheck(unsigned int y, unsigned int x);
-puyocolor GetFieldColor(unsigned int y, unsigned int x);
-void SetFieldColor(unsigned int y, unsigned int x, puyocolor value);
-int GetFieldInt(int *data, unsigned int y, unsigned int x);
-void SetFieldInt(int *data, unsigned int y, unsigned int x, int value);
-bool GetFieldBool(bool *data, unsigned int y, unsigned int x);
-void SetFieldBool(bool *data, unsigned int y, unsigned int x, bool value);
 void UpdateSubPuyoAxis();
 int *GetSubPuyoAxis();
 puyopair GetRandPuyoPair();
@@ -61,7 +53,7 @@ int GetLinkedNum(unsigned int y, unsigned x);
 void ApplyLinkedNum(unsigned int y, unsigned int x, int num);
 void UpdateLinkedNum();
 // ---------------------
-
+void ChangeDataSize(unsigned int rows, unsigned int cols);
 void UpdateMoveableField();
 bool isMoveable(int y, int x);
 bool isPuyoLanding();

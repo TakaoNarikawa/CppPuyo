@@ -1,7 +1,5 @@
-#ifndef _FIELDDATA_H_
-#define _FIELDDATA_H_
-
-using namespace std;
+#include <iostream>
+// #include "fielddata.hpp"
 
 template <typename T>
 class FieldData {
@@ -44,4 +42,18 @@ class FieldData {
     int rows;
     int cols;
 };
-#endif
+
+using namespace std;
+
+int main() {
+    int row = 15;
+    int col = 10;
+    FieldData<int> int_data;
+    for (int y = 0; y < row; y++) {
+        for (int x = 0; x < col; x++) {
+            cout << int_data.GetValue(y, x);
+        }
+        cout << endl;
+    }
+    return 0;
+}
